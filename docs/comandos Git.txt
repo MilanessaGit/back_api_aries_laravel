@@ -1,0 +1,10 @@
+Instalar Git
+    https://git-scm.com/
+
+configurar:
+    git config --global user.name "Su nombre"
+    git config --global user.email "su@correo.com"
+
+Crear una cuenta  en (GITHUB, BITBUCKET, GITLAB)
+
+    Crear un repositorio    

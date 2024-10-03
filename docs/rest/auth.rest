@@ -1,0 +1,22 @@
+## Login
+POST http://127.0.0.1:8000/api/v1/auth/login
+Accept: application/json
+Content-Type: application/json
+
+// si o si debe haber un espacio en blanco antes de {
+{
+    "email" : "juan@mail.com",
+    "password" : "juan54321"
+}
+
+## register
+
+### perfil
+GET http://127.0.0.1:8000/api/v1/auth/perfil
+Accept: application/json
+Authorization: Bearer 6|qdPRTR1YpFhAln0maGX0CPI1GJYmtTq50TvIVjwa85298bee
+
+### logout
+POST http://127.0.0.1:8000/api/v1/auth/logout
+Accept: application/json
+Authorization: Bearer 6|qdPRTR1YpFhAln0maGX0CPI1GJYmtTq50TvIVjwa85298bee
