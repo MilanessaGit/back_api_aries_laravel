@@ -1,0 +1,28 @@
+### Lista de Usuarios
+GET http://127.0.0.1:8000/api/admin/usuario
+### Nuevo Usuario
+POST http://127.0.0.1:8000/api/admin/usuario
+Accept: application/json,
+Content-Type: application/json,
+
+{
+    "name": "Ana",    
+    "email": "ana@mail.com",
+    "password": "ana54321"
+}
+### Mostrar Usuario
+GET http://127.0.0.1:8000/api/admin/usuario/2
+
+### Modificar Usuario
+PUT http://127.0.0.1:8000/api/admin/usuario/3
+Accept: application/json,
+Content-Type: application/json,
+
+{
+    "name": "Ana Modificado",
+    "email": "ana.prueba@mail.com",
+    "password": "ana54321"
+}
+
+### Eliminar Usuario
+DELETE http://127.0.0.1:8000/api/admin/usuario/3

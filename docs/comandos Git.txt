@@ -7,4 +7,17 @@ configurar:
 
 Crear una cuenta  en (GITHUB, BITBUCKET, GITLAB)
 
-    Crear un repositorio    
+    Crear un repositorio
+-----------------------------------------------------
+Iniciar mi proyecto de Laravel con GIT
+> git init
+
+referencia del repositorio local con el repositorio remoto        
+
+> git remote add origin https://github.com/MilanessaGit/back_api_aries_laravel.git
+-----------------------------------------------------
+(hacer esto en cada modificaion al codigo) ()
+
+> git add .
+> git commit -m "Laravel Api Authentication"
+> git push origin master

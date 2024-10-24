@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(Request $request)// $request de data front
     {
         #validate si hay datos
         $credenciales = $request->validate([
