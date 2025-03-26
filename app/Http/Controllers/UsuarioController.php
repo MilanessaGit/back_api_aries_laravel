@@ -80,9 +80,9 @@ class UsuarioController extends Controller
         //VALIDACION
         $request->validate([
             "name" => "required",
-            "email" => "required|email|unique:users,email,$id", // excepto $id; caso particular
+            "email" => "required|email|unique:users,email,$id", // excepto $id , ignorar asi mismo para evitar errores; caso particular
             "password" => "required"
-        ]);
+        ]);// la info es correcta segun lo requerido
         $usuario = User::find($id);
 
         $usuario->name = $request->name;
