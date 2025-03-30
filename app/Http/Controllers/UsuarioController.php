@@ -12,12 +12,19 @@ class UsuarioController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        // Listar
-        // User.all();
-        // User.paginate(5); mostrar 5 usuario con paginacion
+    public function index(Request $request)
+    { 
+        if ($request->buscado) {
+            $usuarios = User::orWhere('name', 'like', '%'.$request->buscado.'%')
+                                ->orWhere('email', 'like', '%'.$request->buscado.'%')
+                                ->get();
+            
+        } else {
+            // Listar
+            // User.all();
+            // User.paginate(5); mostrar 5 usuario con paginacion
         $usuarios = User::get();
+        }
 
         return response()->json($usuarios);
     }
