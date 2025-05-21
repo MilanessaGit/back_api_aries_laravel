@@ -58,7 +58,7 @@ class AuthController extends Controller
     {
         $user = Auth::user(); //otra alternativa $user = $request->user();
         //$user->ip = \Request::ip(); // Para obtener ip del cliente que se conecto
-        $user->ip = exec('getmac'); // Para obtener mac de la terminal(pc) que se conecta
+        //$user->ip = exec('getmac'); // Para obtener mac de la terminal(pc) que se conecta
         return response()->json($user, 200);
     }
     //
