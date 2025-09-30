@@ -1,9 +1,19 @@
 <?php
 
+use App\Http\Controllers\AlmacenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\EmpleadoController;
+use App\Http\Controllers\EntradaController;
+use App\Http\Controllers\LoteController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\VentaController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -23,6 +33,20 @@ Route::prefix('v1/auth')->group(function(){
     });
 });
 
-// CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
-Route::apiResource("/admin/usuario", UsuarioController::class); // ->middleware('auth:sanctum');
+Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
+
+    // CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
+    Route::apiResource("usuario", UsuarioController::class); // ->middleware('auth:sanctum');
     
+    Route::apiResource("categoria", CategoriaController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("producto", ProductoController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("lote", LoteController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("almacen", AlmacenController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("cliente", ClienteController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("empleado", EmpleadoController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("proveedor", ProveedorController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("entrada", EntradaController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("salida", SalidaController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
+
+});
