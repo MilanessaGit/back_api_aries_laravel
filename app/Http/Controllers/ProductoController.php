@@ -54,7 +54,7 @@ class ProductoController extends Controller
         $prod->codigo_producto = $request->codigo_producto;
         $prod->nombre = $request->nombre;
         $prod->precio_sugerido = $request->precio_sugerido;
-        //  - $prod->stock = $request->stock;
+        //  - $prod->stock = $request->stock; // no existe este campo
         
         //$prod->modelo = $request->modelo;
         //$prod->color = $request->color;
@@ -109,7 +109,35 @@ class ProductoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // validar
+        $request->validate([
+            "nombre" => 'required|min:3|max:200',
+            "categoria_id" => "required"
+        ]);
+        // subir img
+        $direccion_imagen = ""; //solo se declarara no subira imagen
+
+
+        // guardar
+        $prod = Producto::find($id);
+        $prod->codigo_producto = $request->codigo_producto;
+        $prod->nombre = $request->nombre;
+        $prod->precio_sugerido = $request->precio_sugerido;
+        // - $prod->stock = $request->stock;//no existe esta campo
+
+        //$prod->modelo = $request->modelo;
+        //$prod->color = $request->color;
+        //$prod->gama = $request->gama;
+        //$prod->peso = $request->peso;
+        //$prod->dimensiones = $request->dimensiones;
+        $prod->descripcion = $request->descripcion;
+        //$prod->caracteristicas = $request->caracteristicas_tecnicas;
+        $prod->categoria_id = $request->categoria_id;
+        $prod->imagen = $direccion_imagen;
+        $prod->update();
+
+        // responder
+        return response()->json(["mensaje" => "Producto Actualizado", "data" => $prod]);
     }
 
     /**
@@ -121,5 +149,8 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         //
+        $prod = Producto::find($id);
+        $prod->delete();
+        return response()->json(["mensaje" => "Producto Eliminado"]);
     }
 }
