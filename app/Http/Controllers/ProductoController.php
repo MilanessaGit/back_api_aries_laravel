@@ -25,7 +25,7 @@ class ProductoController extends Controller
                 ->orderBy($orderby, 'asc')
                 ->paginate($limit);
         } else {
-            $productos = Producto::orderBy($orderby, 'desc')->paginate($limit);
+            $productos = Producto::with('categoria:id,nombre,descripcion')->orderBy($orderby, 'desc')->paginate($limit);
         }
 
         return response()->json($productos, 200);
@@ -51,17 +51,18 @@ class ProductoController extends Controller
 
         // guardar
         $prod = new Producto();
-        $prod->codigo = $request->codigo_producto;
+        $prod->codigo_producto = $request->codigo_producto;
         $prod->nombre = $request->nombre;
-        $prod->precio = $request->precio_sugerido;
+        $prod->precio_sugerido = $request->precio_sugerido;
         //  - $prod->stock = $request->stock;
-        $prod->modelo = $request->modelo;
-        $prod->color = $request->color;
-        $prod->gama = $request->gama;
-        $prod->peso = $request->peso;
-        $prod->dimensiones = $request->dimensiones;
+        
+        //$prod->modelo = $request->modelo;
+        //$prod->color = $request->color;
+        //$prod->gama = $request->gama;
+        //$prod->peso = $request->peso;
+        //$prod->dimensiones = $request->dimensiones;
         $prod->descripcion = $request->descripcion;
-        $prod->caracteristicas = $request->caracteristicas_tecnicas;
+        //$prod->caracteristicas = $request->caracteristicas_tecnicas;
         $prod->categoria_id = $request->categoria_id;
         $prod->imagen = $direccion_imagen;
         $prod->save();
@@ -70,6 +71,24 @@ class ProductoController extends Controller
         return response()->json(["mensaje" => "Producto registrado", "data" => $prod]);
     }
 
+    public function actualizarImagen($id, Request $request)
+    {
+        $producto = Producto::find($id);
+
+        if($file = $request->file('imagen')){
+            //crear un nombre unico
+            $direccion_imagen = time() . "_" . $file->getClientOriginalName();
+            //subir el archivo
+            $file->move("imagenes", $direccion_imagen);
+            //guardar la direccion en la bd
+             
+            $direccion_imagen = "imagenes/" . $direccion_imagen;
+            $producto->imagen = $direccion_imagen;
+            $producto->save();
+        }    
+            return response()->json(["mensaje" => "Imagen producto actualizada"], 201);
+        
+    }
     /**
      * Display the specified resource.
      *

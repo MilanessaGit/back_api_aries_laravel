@@ -36,7 +36,7 @@ class CategoriaController extends Controller
         //guardar
         $cat = new Categoria();
         $cat->nombre = $request->nombre;
-        //$cat->descripcion = $request->descripcion;
+        $cat->descripcion = $request->descripcion;
         $cat->save();
 
         return response()->json(["mensaje" => "Categoria Registrada"], 201);
