@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Venta;
 use Illuminate\Http\Request;
 
 class VentaController extends Controller
@@ -13,7 +14,8 @@ class VentaController extends Controller
      */
     public function index()
     {
-        //
+        $ventas = Venta::orderBy('id', 'desc')->paginate(10);
+        return response()->json($ventas);
     }
 
     /**
@@ -24,7 +26,22 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //validar
+        $request->validate([
+            "cliente_id" => "required",
+        ]);
+        //registrar nueva venta (PENDIENTE)
+        $venta = new Venta();
+        $venta->cliente_id = $request->cliente_id;
+        $venta->empleado_id = $request->empleado_id;
+        $venta->codigo_venta = Venta::generarCodigoVenta();
+        $venta->fecha = date('Y-m-d H:i:s');
+        $venta->total = $request->total;
+        $venta->estado = '1'; //1: activo, 0:anulado
+        $venta->observaciones = $request->observaciones;
+        $venta->save();
+        return response()->json($venta, 201);
+        // return response()->json(["mensaje" => "Venta Registrada"], 201);
     }
 
     /**
