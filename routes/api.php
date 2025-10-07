@@ -31,6 +31,7 @@ Route::prefix('v1/auth')->group(function(){
         Route::get("/perfil", [AuthController::class, "miPerfil"]);
         Route::post("/logout", [AuthController::class, "cerrar"]);
     });
+    
 });
 
 Route::prefix('admin')->middleware('auth:sanctum')->group(function(){

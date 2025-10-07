@@ -46,7 +46,7 @@ return [
     |
     */
 
-    'expiration' => 1, //tokens duraran 120 minutos
+    'expiration' => null, //tokens duraran 120 minutos = 120
 
     /*
     |--------------------------------------------------------------------------
