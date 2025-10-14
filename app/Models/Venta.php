@@ -17,7 +17,7 @@ class Venta extends Model
     
     // N:M
     public function lotes(){ //Una venta tiene muchos lote(s)
-        return $this->belongsToMany(Lote::class);// ->withPivot('cantidad','precio_venta'); //->withPivot('cantidad','precio_venta') es para acceder a las columnas cantidad y precio_venta de la tabla intermedia
+        return $this->belongsToMany(Lote::class)->withPivot(["cantidad", "precio_unitario"])->withTimestamps(); //->withPivot('cantidad','precio_venta') es para acceder a las columnas cantidad y precio_venta de la tabla intermedia
     }
 
     public static function generarCodigoVenta()
