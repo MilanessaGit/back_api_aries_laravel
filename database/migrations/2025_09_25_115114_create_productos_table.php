@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('imagen')->nullable();
             $table->string('modelo', 100)->nullable();
             $table->string('color', 50)->nullable();
+            $table->string('material', 150)->nullable();
             $table->string('gama', 50)->nullable();
             $table->decimal('peso', 10, 2)->default(0);
             $table->string('dimensiones', 100)->nullable();

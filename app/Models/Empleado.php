@@ -11,6 +11,10 @@ class Empleado extends Model
     /*public function usuario(){ //Un empleado pertenece a un usuario
         return $this->belongsTo(User::class);
     }*/
+
+    public function user(){ //Un empleado pertenece a un usuario
+        return $this->belongsTo(User::class);
+    }    
     public function ventas(){ //Un empleado tiene muchas venta(s)
         return $this->hasMany(Venta::class);
     }
