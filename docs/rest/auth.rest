@@ -5,11 +5,11 @@ Content-Type: application/json
 
 // si o si debe haber un espacio en blanco antes de {
 {
-    "email" : "juan@mail.com",
-    "password" : "juan54321"
+    "email" : "carlos@mail.com",
+    "password" : "carlos54321"
 }
 
-## register
+### register
 
 ### perfil
 GET http://127.0.0.1:8000/api/v1/auth/perfil

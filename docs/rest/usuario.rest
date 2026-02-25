@@ -6,9 +6,9 @@ Accept: application/json,
 Content-Type: application/json,
 
 {
-    "name": "Ana",    
-    "email": "ana@mail.com",
-    "password": "ana54321"
+    "name": "Carlos",    
+    "email": "carlos@mail.com",
+    "password": "carlos54321"
 }
 ### Mostrar Usuario
 GET http://127.0.0.1:8000/api/admin/usuario/2

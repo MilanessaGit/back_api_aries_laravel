@@ -11,6 +11,7 @@ use App\Http\Controllers\EntradaController;
 use App\Http\Controllers\LoteController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\RecomendacionController;
 use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
@@ -34,7 +35,11 @@ Route::prefix('v1/auth')->group(function(){
     
 });
 
+Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recomendar']);
+
 Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
+
+    
 
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
