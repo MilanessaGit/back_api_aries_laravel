@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class ProductoController extends Controller
 {
@@ -152,5 +153,12 @@ class ProductoController extends Controller
         $prod = Producto::find($id);
         $prod->delete();
         return response()->json(["mensaje" => "Producto Eliminado"]);
+    }
+
+    public function prediccion()
+    {
+        $response = Http::get('http://127.0.0.1:8001/prediccion');
+
+        return response()->json($response->json());
     }
 }

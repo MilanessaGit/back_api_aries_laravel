@@ -36,11 +36,12 @@ Route::prefix('v1/auth')->group(function(){
 });
 
 Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recomendar']);
+Route::get('/prediccion', [ProductoController::class, 'prediccion']);
+
 
 Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
 
     
-
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
     // CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
