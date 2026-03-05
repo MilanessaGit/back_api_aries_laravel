@@ -14,10 +14,14 @@ class EmpleadoController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->q){
-            $empleados = Empleado::where('ci_nit' , 'like', "%" . $request->q . "%")->first();
+        $limit = $request->limit ? $request->limit : 10;
+        $q = $request->q;
+        $orderby = $request->orderby ? $request->orderby : 'id';
+
+        if($q){
+            $empleados = Empleado::where('ci_nit' , 'like', "%" . $q . "%")->orderBy($orderby)->paginate($limit);
         }else{
-            $empleados = Empleado::paginate(5);
+            $empleados = Empleado::with('user:id,name,email')->orderBy($orderby)->paginate($limit);
         }
         return response()->json($empleados);
     }

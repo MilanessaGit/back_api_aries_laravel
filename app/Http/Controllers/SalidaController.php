@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Salida;
+use App\Models\Lote;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SalidaController extends Controller
 {
@@ -13,22 +16,10 @@ class SalidaController extends Controller
      */
     public function index(Request $request)
     {
-        // /api/salida?page=2&limit=10$q=1223&orderby=id
-        //$page = $request->page; // ya captura por si solo sin guardarlo en una variable
-        $limit = $request->limit?$request->limit:10;
-        $q = $request->q; //valor de busqueda
-        $orderby = $request->orderby?$request->orderby:'id';
+        $salidas = Salida::with('empleado', 'lotes')->orderBy('id', 'desc')->paginate(5);
 
-        if($q){
-            $salidas = Salida::where('codigo_salida','like',"%$q%")
-            ->orderBy($orderby,'desc')
-            ->paginate($limit);
-
-        }else{
-            $salidas = Salida::orderBy($orderby,'desc')->paginate($limit);
-        }
-
-        return response()->json($salidas, 200);
+        //$salidas = Salida::orderBy('id', 'desc')->paginate(10);
+        return response()->json($salidas);
     }
 
     /**
