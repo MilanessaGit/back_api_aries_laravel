@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
 
 class ProveedorController extends Controller
@@ -11,9 +12,14 @@ class ProveedorController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        if($request->q){
+            $prov = Proveedor::where('ci_nit' , 'like', "%" . $request->q . "%")->first();
+        }else{
+            $prov = Proveedor::paginate(5);
+        }
+        return response()->json($prov);
     }
 
     /**
@@ -24,7 +30,15 @@ class ProveedorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $proveedor = new Proveedor();
+        $proveedor->codigo_proveedor = $request->codigo_proveedor;
+        $proveedor->nombre = $request->nombre;
+        $proveedor->apellido = $request->apellido;
+        $proveedor->ci_nit = $request->ci_nit;
+        $proveedor->telefono = $request->telefono;
+        $proveedor->direccion = $request->direccion;
+        $proveedor->save();
+        return response()->json($proveedor);
     }
 
     /**

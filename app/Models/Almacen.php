@@ -10,6 +10,13 @@ class Almacen extends Model
     use HasFactory;
     // N:M
     public function lotes(){ //Un almacen tiene muchos lote(s)
-        return $this->belongsToMany(Lote::class); //->withPivot('cantidad'); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
+        return $this->belongsToMany(Lote::class)->withPivot(['cantidad'])->withTimestamps(); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
     }
+    /*public static function generarCodigoAlmacen()
+    {
+        $ultimaAlmacen = self::latest('id')->first();
+        $codigo = 'ALM-' . str_pad($ultimaAlmacen ? $ultimaAlmacen->id + 1 : 1, 4, '0', STR_PAD_LEFT);
+        return $codigo;
+    }
+    */    
 }

@@ -17,6 +17,13 @@ class Entrada extends Model
 
     // N:M
     public function lotes(){ //Una entrada tiene muchos lote(s)
-        return $this->belongsToMany(Lote::class);// ->withPivot('cantidad','
-    }    
+        return $this->belongsToMany(Lote::class)->withPivot(["cantidad", "precio_unitario"])->withTimestamps();// ->withPivot('cantidad','
+    }
+    
+    public static function generarCodigoEntrada()
+    {
+        $ultimaEntrada = self::latest('id')->first();
+        $codigo = 'ENT-' . str_pad($ultimaEntrada ? $ultimaEntrada->id + 1 : 1, 4, '0', STR_PAD_LEFT);
+        return $codigo;
+    }
 }

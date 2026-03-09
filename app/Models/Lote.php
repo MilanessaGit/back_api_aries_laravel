@@ -24,6 +24,6 @@ class Lote extends Model
         return $this->belongsToMany(Salida::class); //->withPivot('cantidad'); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
     }
     public function entradas(){ //Un lote pertenece a muchas entradas
-        return $this->belongsToMany(Entrada::class);// ->withPivot('cantidad','precio_compra'); //->withPivot('cantidad','precio_compra') es para acceder a las columnas cantidad y precio_compra de la tabla intermedia
+        return $this->belongsToMany(Entrada::class)->withPivot(['cantidad','precio_unitario'])->withTimestamps(); //->withPivot('cantidad','precio_compra') es para acceder a las columnas cantidad y precio_compra de la tabla intermedia
     }
 }

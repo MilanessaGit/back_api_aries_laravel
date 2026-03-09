@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Entrada;
+use App\Models\Lote;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EntradaController extends Controller
 {
@@ -13,8 +17,12 @@ class EntradaController extends Controller
      */
     public function index()
     {
-        //
+        $entradas = Entrada::with('proveedor', 'lotes')->orderBy('id', 'desc')->paginate(5);
+
+        //$entradas = Entrada::orderBy('id', 'desc')->paginate(10);
+        return response()->json($entradas);
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -24,7 +32,93 @@ class EntradaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validación completa
+        $request->validate([
+            'proveedor_id' => 'required|numeric|exists:proveedors,id',
+            //'empleado_id' => 'required|numeric|exists:empleados,id',
+            'lotes' => 'required|array|min:1',
+            'lotes.*.id' => 'required|numeric|exists:lotes,id',
+            'lotes.*.cantidad' => 'required|numeric|min:1',
+            //'observaciones' => 'nullable|string'
+        ]);
+
+        DB::beginTransaction();
+        try{
+            //registrar nueva entrada (PENDIENTE)
+            $entrada = new Entrada();
+            // asignar proveedor a la entrada
+            $entrada->proveedor_id = (int) $request->proveedor_id;
+            $entrada->empleado_id =  (int) $request->empleado_id;
+            $entrada->codigo_entrada = Entrada::generarCodigoEntrada();
+            $entrada->fecha = date('Y-m-d H:i:s');// now()
+            $entrada->precio_total = 0; //inicializamos en 0, luego se actualiza con el total de la entrada
+            
+            //$entrada->observaciones = $request->observaciones ?? null;
+            $entrada->save();
+
+            /* Esto lo que el frontend enviaría en el request para registrar una venta
+            {
+                cliente_id: 5,
+                lotes: [
+                    {lote_id: 3, cantidad: 1},
+                    {lote_id: 4, cantidad: 1},
+                    {lote_id: 1, cantidad: 1},
+                ]
+            }
+            */
+            // asignar Lotes// En $request llega lo que enviamos del boton del carrito
+            // los atributos de la relacion muchos a muchos se asignan en el attach)    
+            $lotes = $request->lotes;
+            $calculatedTotal = 0.0;
+
+                // recorremos los lotes enviados en el request del frontend y solo tienen como atributos id y cantidad, el precio_unitario lo obtenemos de la tabla lotes
+                foreach ($lotes as $lot) {
+                    $loteId = (int) $lot["id"];
+                    $cantidadEntrada = (int) $lot["cantidad"]; //cantidad que el frontend que pide (ver arriba el ejemplo del request)
+                    
+                    // obtener el precio unitario del lote
+                    $lote = Lote::where('id', $loteId)->lockForUpdate()->firstOrFail();
+                    $precioUnitario = (float) $lote->costo_unitario;
+
+                    //verificar si el lote tiene stock suficiente
+                    if ($lote->cantidad < $cantidadEntrada) {
+                        throw new \Exception("Stock insuficiente para el lote {$loteId}. Disponible: {$lote->cantidad}, Solicitado: {$cantidadEntrada}");
+                    }
+
+                    //EJ:  $user->roles()->attach($roleId, ['expires' => $expires]);
+                    
+                    //Attah nos ayuda a insertar en la tabla intermedia 'venta_lote' los datos de la venta, el lote y los atributos adicionales cantidad y precio_unitario
+                    $entrada->lotes()->attach($loteId, [
+                        'cantidad' => $cantidadEntrada,// La cantidad que el frontend solicita para ese lote
+                        'precio_unitario' => $precioUnitario, // ver que precio colocar al final, si el precio del lote o el precio de venta que el frontend envía, lo ideal es que el frontend envíe el precio de venta y no el precio del lote, pero por ahora lo dejamos así************
+
+                        //'observaciones' => $lot['observaciones'] ?? null
+                        ]);
+                // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
+                $lote->cantidad += $cantidadEntrada; // sumamos la cantidad vendida al stock del lote
+                $lote->save(); // guardamos los cambios en el lote
+                $calculatedTotal += $cantidadEntrada * $precioUnitario; // calculamos el total de la entrada
+                }
+                //return $venta;
+                // actualizar total de la venta
+                    $entrada->precio_total = $calculatedTotal;
+                    
+                    $entrada->save();
+                // actualizar estado //  COMPLETADO
+                    //  $venta->estado = 2;
+                // guardarmos cambios
+                    // $venta->update();
+                // retornamos respuesta
+
+                DB::commit();
+                // all good
+                return response()->json(["mensaje" => "Entrada Registrada", "data" => $entrada], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            // something went wrong
+            return response()->json(["mensaje" => "Error al registrar la entrada", "error" => $e->getMessage()], 500);
+        }
+        
     }
 
     /**
