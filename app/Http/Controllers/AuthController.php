@@ -25,11 +25,15 @@ class AuthController extends Controller
         $user = Auth::user();
         $tokenResult = $user->createToken("Token Auth");
         $token = $tokenResult->plainTextToken;
+        // obtener rol
+        $role = $user->roles()->first();
+
         // respuesta
         return response()->json([
             "access_token" => $token,
             "token_type" => "Bearer",
-            "usuario" => $user
+            "usuario" => $user,
+            "role" => $role->nombre
         ]);
     }
     //
@@ -59,7 +63,11 @@ class AuthController extends Controller
         $user = Auth::user(); //otra alternativa $user = $request->user();
         //$user->ip = \Request::ip(); // Para obtener ip del cliente que se conecto
         //$user->ip = exec('getmac'); // Para obtener mac de la terminal(pc) que se conecta
-        return response()->json($user, 200);
+        $role = $user->roles()->first();
+        return response()->json([
+            "user" => $user,
+            "role" => $role
+        ], 200);
     }
     //
     public function cerrar(Request $request) //request captura las peticiones del cliente

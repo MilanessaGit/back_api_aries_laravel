@@ -15,6 +15,13 @@ class Salida extends Model
     
     // N:M
     public function lotes(){ //Una salida tiene muchos lote(s)
-        return $this->belongsToMany(Lote::class); //->withPivot('cantidad'); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
+        return $this->belongsToMany(Lote::class)->withPivot(['cantidad'])->withTimestamps(); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
+    }
+
+    public static function generarCodigoSalida()
+    {
+        $ultimaSalida = self::latest('id')->first();
+        $codigo = 'SAL-' . str_pad($ultimaSalida ? $ultimaSalida->id + 1 : 1, 4, '0', STR_PAD_LEFT);
+        return $codigo;
     }
 }

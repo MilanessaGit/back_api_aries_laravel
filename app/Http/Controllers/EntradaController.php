@@ -94,10 +94,10 @@ class EntradaController extends Controller
 
                         //'observaciones' => $lot['observaciones'] ?? null
                         ]);
-                // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
-                $lote->cantidad += $cantidadEntrada; // sumamos la cantidad vendida al stock del lote
-                $lote->save(); // guardamos los cambios en el lote
-                $calculatedTotal += $cantidadEntrada * $precioUnitario; // calculamos el total de la entrada
+                    // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
+                    $lote->cantidad += $cantidadEntrada; // sumamos la cantidad vendida al stock del lote
+                    $lote->save(); // guardamos los cambios en el lote
+                    $calculatedTotal += $cantidadEntrada * $precioUnitario; // calculamos el total de la entrada
                 }
                 //return $venta;
                 // actualizar total de la venta

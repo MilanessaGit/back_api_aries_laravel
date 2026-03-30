@@ -23,6 +23,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
 
+    public function hasRole($role)
+    {
+        return $this->roles()->where('nombre', $role)->exists();
+    }
+
+    public function hasAnyRole($roles)
+    {
+        return $this->roles()->whereIn('nombre', $roles)->exists();
+    }
+
     /**
      * The attributes that are mass assignable.
      *

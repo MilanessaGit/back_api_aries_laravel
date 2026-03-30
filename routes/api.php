@@ -23,14 +23,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1/auth')->group(function(){
 
     // login,   register
-    Route::post("/login", [AuthController::class, "login"]);
-    Route::post("/register", [AuthController::class, "registro"]);
+    Route::post("/login", [AuthController::class, "login"]); //->middleware('throttle:10,1'); // Limitar a 5 intentos por minuto para evitar ataques de fuerza bruta
+    Route::post("/register", [AuthController::class, "registro"]); //mover al admin, solo el admin puede crear usuarios, o crear un endpoint para que el admin cree usuarios, y este endpoint si lo protejo con el middleware de auth:sanctum y role:admin
 
     // For this group we protect with a middleware (sanctum) through of tokens
     Route::middleware('auth:sanctum')->group(function(){
             // profile, logout
         Route::get("/perfil", [AuthController::class, "miPerfil"]);
         Route::post("/logout", [AuthController::class, "cerrar"]);
+
     });
     
 });
@@ -39,8 +40,7 @@ Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recome
 Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
-Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
-
+Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
     
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
@@ -58,4 +58,20 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function(){
     Route::apiResource("salida", SalidaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
 
+});
+
+Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor')->group(function(){
+    Route::apiResource('producto', ProductoController::class);
+    Route::apiResource('proveedor', ProveedorController::class);
+    Route::apiResource('entrada', EntradaController::class);
+    Route::apiResource('salida', SalidaController::class);
+});
+
+Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(function(){
+    Route::apiResource('producto', ProductoController::class);
+    Route::apiResource('categoria', CategoriaController::class);
+
+    Route::apiResource('lote', LoteController::class);
+    Route::apiResource('cliente', ClienteController::class);
+    Route::apiResource('venta', VentaController::class);
 });
