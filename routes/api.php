@@ -57,21 +57,28 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("entrada", EntradaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("salida", SalidaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
-
+    Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');
 });
 
-Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor')->group(function(){
-    Route::apiResource('producto', ProductoController::class);
-    Route::apiResource('proveedor', ProveedorController::class);
-    Route::apiResource('entrada', EntradaController::class);
-    Route::apiResource('salida', SalidaController::class);
+Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
+    Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('producto', ProductoController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('lote', LoteController::class)->only(['index', 'show', 'store']);
+
+    Route::apiResource('entrada', EntradaController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('salida', SalidaController::class)->only(['index', 'show', 'store']);
+
+    Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('proveedor', ProveedorController::class)->only(['index', 'show', 'store']);
+    
 });
 
 Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(function(){
-    Route::apiResource('producto', ProductoController::class);
-    Route::apiResource('categoria', CategoriaController::class);
+    Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show']);
+    Route::apiResource('lote', LoteController::class)->only(['index', 'show']);
+    Route::apiResource('producto', ProductoController::class)->only(['index', 'show']);
 
-    Route::apiResource('lote', LoteController::class);
-    Route::apiResource('cliente', ClienteController::class);
-    Route::apiResource('venta', VentaController::class);
+    
+    Route::apiResource('cliente', ClienteController::class)->only(['index', 'show']);
+    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
 });
