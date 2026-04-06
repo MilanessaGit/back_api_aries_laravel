@@ -61,15 +61,16 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
 });
 
 Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
-    Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show', 'store']);
-    Route::apiResource('producto', ProductoController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show']);
+    Route::apiResource('producto', ProductoController::class)->only(['index', 'show']);
     Route::apiResource('lote', LoteController::class)->only(['index', 'show', 'store']);
 
+    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
     Route::apiResource('entrada', EntradaController::class)->only(['index', 'show', 'store']);
     Route::apiResource('salida', SalidaController::class)->only(['index', 'show', 'store']);
 
     Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
-    Route::apiResource('proveedor', ProveedorController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('almacen', AlmacenController::class)->only(['index', 'show', 'store']);
     
 });
 
@@ -79,6 +80,6 @@ Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(fu
     Route::apiResource('producto', ProductoController::class)->only(['index', 'show']);
 
     
-    Route::apiResource('cliente', ClienteController::class)->only(['index', 'show']);
+    Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
     Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
 });
