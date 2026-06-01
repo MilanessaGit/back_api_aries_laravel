@@ -26,4 +26,10 @@ class Lote extends Model
     public function entradas(){ //Un lote pertenece a muchas entradas
         return $this->belongsToMany(Entrada::class)->withPivot(['cantidad','precio_unitario'])->withTimestamps(); //->withPivot('cantidad','precio_compra') es para acceder a las columnas cantidad y precio_compra de la tabla intermedia
     }
+    public static function generarCodigoLote()
+    {
+        $ultimoLote = self::latest('id')->first();
+        $codigo = 'LOT-' . str_pad($ultimoLote ? $ultimoLote->id + 1 : 1, 4, '0', STR_PAD_LEFT);
+        return $codigo;
+    }
 }

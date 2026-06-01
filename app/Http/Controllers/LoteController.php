@@ -41,7 +41,7 @@ class LoteController extends Controller
     {
         // validar
         $request->validate([
-            "codigo_lote" => 'required|min:3|max:200',
+            //"codigo_lote" => 'required|min:3|max:200',
             "producto_id" => "required"
         ]);
     
@@ -50,7 +50,8 @@ class LoteController extends Controller
         // guardar
         $lot = new Lote();
 
-        $lot->codigo_lote = $request->codigo_lote;
+        //$lot->codigo_lote = $request->codigo_lote;
+        $lot->codigo_lote = Lote::generarCodigoLote(); // Generar código de lote automáticamente
         $lot->costo_unitario = $request->costo_unitario;
         $lot->cantidad = $request->cantidad; 
         

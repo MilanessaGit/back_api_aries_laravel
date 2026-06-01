@@ -72,9 +72,9 @@ class VentaController extends Controller
                 // recorremos los lotes enviados en el request del frontend y solo tienen como atributos id y cantidad, el precio_unitario lo obtenemos de la tabla lotes
                 foreach ($lotes as $lot) {
                     $loteId = (int) $lot["id"];
-                    $cantidadVenta = (int) $lot["cantidad"]; //cantidad que el frontend que pide (ver arriba el ejemplo del request)
+                    $cantidadVenta = (int) $lot["cantidad"];
                     
-                    // obtener el precio unitario del lote
+                    // obtener el precio unitario del lote de la BD 
                     $lote = Lote::where('id', $loteId)->lockForUpdate()->firstOrFail();
                     $precioUnitario = (float) $lote->costo_unitario;
 
@@ -88,7 +88,7 @@ class VentaController extends Controller
                     //Attah nos ayuda a insertar en la tabla intermedia 'venta_lote' los datos de la venta, el lote y los atributos adicionales cantidad y precio_unitario
                     $venta->lotes()->attach($loteId, [
                         'cantidad' => $cantidadVenta,// La cantidad que el frontend solicita para ese lote
-                        'precio_unitario' => $precioUnitario, // ver que precio colocar al final, si el precio del lote o el precio de venta que el frontend envía, lo ideal es que el frontend envíe el precio de venta y no el precio del lote, pero por ahora lo dejamos así************
+                        'precio_unitario' => $precioUnitario, // ver que precio colocar al final. Si el precio del lote o el precio de venta que viene del frontend, lo ideal es que el frontend envíe el precio de venta y no el precio del lote, pero por ahora lo dejamos así************
 
                         //'observaciones' => $lot['observaciones'] ?? null
                         ]);
