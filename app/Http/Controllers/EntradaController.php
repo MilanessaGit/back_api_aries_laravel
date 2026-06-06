@@ -33,67 +33,62 @@ class EntradaController extends Controller
      */
     public function store(Request $request)
     {
-        // Validación completa
-        /*$request->validate([
-            'proveedor_id' => 'required|numeric|exists:proveedors,id',
-            //'empleado_id' => 'required|numeric|exists:empleados,id',
-            
-            'lot.cantidad' => 'required|numeric|min:1',
-            //'observaciones' => 'nullable|string'
-            'lot.precio' => 'required'
-            //'lot.producto_id' => 'required'
-        ]);*/
+        $request->validate([
+            'proveedor_id' => 'required|exists:proveedors,id',
+            'empleado_id' => 'required|integer',
+
+            'productos' => 'required|array|min:1',
+
+            'productos.*.codigo_producto' => 'required|string',
+
+            'productos.*.cantidad' => 'required|integer|min:1',
+
+            'productos.*.costo_unitario' => 'required|numeric|min:0'
+        ]);
 
         DB::beginTransaction();
         try{
-            //registrar nueva entrada (PENDIENTE)
             $entrada = new Entrada();
-            // asignar proveedor a la entrada
             $entrada->empleado_id =  (int) $request->empleado_id;
-            $entrada->proveedor_id = (int) $request->proveedor_id;
-            
+            $entrada->proveedor_id = (int) $request->proveedor_id; // rev
             $entrada->codigo_entrada = Entrada::generarCodigoEntrada();
             $entrada->fecha = date('Y-m-d H:i:s');// now()
-            $entrada->precio_total = (float) $request->p_total; 
-
+            $entrada->precio_total = 0; // se actualizará después de calcular
             //$entrada->observaciones = $request->observaciones ?? null;
-            
             $entrada->save();
 
-            // guardar
-            $lote = new Lote();
+            $total = 0;
+            foreach ($request->productos as $item) { // item = 1_producto
+                // Observar que codigo_producto puede haber coincidencias en las letras del codigo y considerar buscar por ID del producto
+                $producto = Producto::where(
+                    'codigo_producto',
+                    $item['codigo_producto']
+                )
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            //$lote->codigo_lote = $request->codigo_lote;
-            $lote->codigo_lote = Lote::generarCodigoLote(); // Generar código de lote automáticamente
-            $lote->costo_unitario = (float) $request->lot['costo_unitario'];
-            $lote->cantidad = (int) $request->lot['cantidad'];
+                $lote = new Lote();
 
-            //$producto = Producto::find($request->lot.producto_id); // Obtener el producto por su ID
-            
+                $lote->codigo_lote = Lote::generarCodigoLote();
+                $lote->producto_id = $producto->id;
+                $lote->fecha_ingreso = now();
+                $lote->cantidad = (int)$item['cantidad'];
+                $lote->costo_unitario = (float)$item['costo_unitario'];
+                $lote->estado = 1; // 1 = activo, 0 = inactivo
+                $lote->save(); // con esto se crea el lote en BD y tiene su ID
 
-            $producto = Producto::where('codigo_producto', $request->lot['codigo_producto'])->lockForUpdate()->firstOrFail();
+                $entrada->lotes()->attach(
+                    $lote->id,
+                    [
+                        'cantidad' => (int)$item['cantidad'],
+                        'precio_unitario' => (float)$item['costo_unitario']
+                    ]
+                );
 
-            
-            if (!$producto) {
-                throw new \Exception("Producto no encontrado con código: " . $request->lot['codigo_producto']);
+                $total += ((int)$item['cantidad']) * ((float)$item['costo_unitario']);
             }
-            // Sabado tarea: Para el id debemos 1ro relacionar el CodProd del frontend con el CodProd existente de la tabla productos para asi obtener el ID del producto al cual hacemos Referencia
-
-            $lote->producto_id = $producto->id; // Asignar el ID del producto al lote
-            $lote->save();
-
-            //Attah nos ayuda a insertar en la tabla intermedia 'venta_lote' los datos de la venta, el lote y los atributos adicionales cantidad y precio_unitario
-
-            
-            $entrada->lotes()->attach($lote->id, [
-            'cantidad' => (int) $request->lot['cantidad'],// La cantidad del frontend 
-            'precio_unitario' => (float) $request->lot['costo_unitario'], 
-
-            //'observaciones' => $lot['observaciones'] ?? null
-            ]);
-                
-           // $lote->save(); // guardamos los cambios en el lote
-             // $entrada->save();
+            $entrada->precio_total = $total;
+            $entrada->save();
 
             DB::commit();
                 

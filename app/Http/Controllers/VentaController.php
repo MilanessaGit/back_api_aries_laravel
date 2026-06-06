@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venta;
+use App\Models\Salida;
 use App\Models\Lote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,7 @@ class VentaController extends Controller
      */
     public function index()
     {
-        $ventas = Venta::with('cliente', 'lotes')->orderBy('id', 'desc')->paginate(5);
+        $ventas = Venta::with('cliente', 'lotes')->orderBy('id', 'asc')->paginate(5);
 
         //$ventas = Venta::orderBy('id', 'desc')->paginate(10);
         return response()->json($ventas);
@@ -33,7 +34,7 @@ class VentaController extends Controller
         // Validación completa
         $request->validate([
             'cliente_id' => 'required|numeric|exists:clientes,id',
-            //'empleado_id' => 'required|numeric|exists:empleados,id',
+            'empleado_id' => 'required|numeric|exists:empleados,id',
             'lotes' => 'required|array|min:1',
             'lotes.*.id' => 'required|numeric|exists:lotes,id',
             'lotes.*.cantidad' => 'required|numeric|min:1',
@@ -54,6 +55,17 @@ class VentaController extends Controller
             //$venta->observaciones = $request->observaciones ?? null;
             $venta->save();
 
+            //Salida
+                $salida = new Salida();
+
+                $salida->codigo_salida = Salida::generarCodigoSalida();
+                $salida->fecha = now();
+                $salida->total = 0;
+                $salida->tipo = 1; // Venta
+                $salida->empleado_id = $request->empleado_id;
+
+                $salida->save();
+
             /* Esto lo que el frontend enviaría en el request para registrar una venta
             {
                 cliente_id: 5,
@@ -64,6 +76,7 @@ class VentaController extends Controller
                 ]
             }
             */
+
             // asignar Lotes// En $request llega lo que enviamos del boton del carrito
             // los atributos de la relacion muchos a muchos se asignan en el attach)    
             $lotes = $request->lotes;
@@ -89,10 +102,13 @@ class VentaController extends Controller
                     $venta->lotes()->attach($loteId, [
                         'cantidad' => $cantidadVenta,// La cantidad que el frontend solicita para ese lote
                         'precio_unitario' => $precioUnitario, // ver que precio colocar al final. Si el precio del lote o el precio de venta que viene del frontend, lo ideal es que el frontend envíe el precio de venta y no el precio del lote, pero por ahora lo dejamos así************
-
                         //'observaciones' => $lot['observaciones'] ?? null
                         ]);
-                // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
+                    // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
+                    $salida->lotes()->attach($loteId, [
+                        'cantidad' => $cantidadVenta,
+                        'observaciones' => 'Salida generada por venta '.$venta->codigo_venta
+                    ]);
                 $lote->cantidad -= $cantidadVenta; // restamos la cantidad vendida al stock del lote
                 $lote->save(); // guardamos los cambios en el lote
                 $calculatedTotal += $cantidadVenta * $precioUnitario; // calculamos el total de la venta
@@ -107,6 +123,9 @@ class VentaController extends Controller
                 // guardarmos cambios
                     // $venta->update();
                 // retornamos respuesta
+                    $salida->total = $calculatedTotal;
+                    $salida->save();
+                
 
                 DB::commit();
                 // all good
