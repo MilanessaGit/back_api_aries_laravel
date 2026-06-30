@@ -17,11 +17,11 @@ return new class extends Migration
             $table->id();
             $table->integer('cantidad')->default(1);
 
-            $table->bigInteger('almacen_id')->unsigned();
-            $table->bigInteger('lote_id')->unsigned();
+            //$table->bigInteger('almacen_id')->unsigned();
+            //$table->bigInteger('lote_id')->unsigned();
 
-             $table->foreign('almacen_id')->references('id')->on('almacens');
-             $table->foreign('lote_id')->references('id')->on('lotes');
+             //$table->foreign('almacen_id')->references('id')->on('almacens');
+             //$table->foreign('lote_id')->references('id')->on('lotes');
             $table->timestamps();
         });
     }

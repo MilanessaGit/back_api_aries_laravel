@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entrada;
+use App\Models\Proveedor;
 use App\Models\Lote;
 use App\Models\Producto;
 
@@ -52,8 +53,9 @@ class EntradaController extends Controller
             $entrada->empleado_id =  (int) $request->empleado_id;
             $entrada->proveedor_id = (int) $request->proveedor_id; // rev
             $entrada->codigo_entrada = Entrada::generarCodigoEntrada();
+            $entrada->tipo_entrada = $request->tipo_entrada;
             $entrada->fecha = date('Y-m-d H:i:s');// now()
-            $entrada->precio_total = 0; // se actualizará después de calcular
+            $entrada->total = 0; // se actualizará después de calcular
             //$entrada->observaciones = $request->observaciones ?? null;
             $entrada->save();
 
@@ -72,7 +74,8 @@ class EntradaController extends Controller
                 $lote->codigo_lote = Lote::generarCodigoLote();
                 $lote->producto_id = $producto->id;
                 $lote->fecha_ingreso = now();
-                $lote->cantidad = (int)$item['cantidad'];
+                $lote->cantidad_inicial = (int)$item['cantidad'];//$item=e vue
+                $lote->cantidad_actual = $lote->cantidad_inicial; // Inicialmente, la cantidad final es igual a la cantidad inicial
                 $lote->costo_unitario = (float)$item['costo_unitario'];
                 $lote->estado = 1; // 1 = activo, 0 = inactivo
                 $lote->save(); // con esto se crea el lote en BD y tiene su ID
@@ -81,13 +84,13 @@ class EntradaController extends Controller
                     $lote->id,
                     [
                         'cantidad' => (int)$item['cantidad'],
-                        'precio_unitario' => (float)$item['costo_unitario']
+                        'costo_unitario' => (float)$item['costo_unitario']
                     ]
                 );
 
                 $total += ((int)$item['cantidad']) * ((float)$item['costo_unitario']);
             }
-            $entrada->precio_total = $total;
+            $entrada->total = $total;
             $entrada->save();
 
             DB::commit();

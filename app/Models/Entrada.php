@@ -14,10 +14,12 @@ class Entrada extends Model
     public function empleado(){ //Una entrada pertenece a un empleado
         return $this->belongsTo(Empleado::class);
     }
-
     // N:M
     public function lotes(){ //Una entrada tiene muchos lote(s)
-        return $this->belongsToMany(Lote::class)->withPivot(["cantidad", "precio_unitario"])->withTimestamps();// ->withPivot('cantidad','
+        return $this->belongsToMany(Lote::class)->withPivot(["cantidad", "costo_unitario"])->withTimestamps();// ->withPivot('cantidad','
+    }
+    public function pagos(){ //Una entrada tiene muchos pago(s)
+        return $this->hasMany(Pago::class);
     }
     
     public static function generarCodigoEntrada()

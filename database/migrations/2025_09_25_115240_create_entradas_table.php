@@ -16,12 +16,16 @@ return new class extends Migration
         Schema::create('entradas', function (Blueprint $table) {
             $table->id();
             $table->string('codigo_entrada', 20);
+            $table->string('tipo_entrada', 50); // 1:compra, 2:produccion_propia, 3:devolucion_clientea 4:juste_positivo
             $table->dateTime('fecha');
-            $table->decimal('precio_total', 12, 2);
+            $table->decimal('total', 12, 2)->nullable(); // ------precio_total 
+            $table->string('tipo_pago', 50)->nullable(); // 1:contado, 2:credito, 3:mixto
+            $table->string('estado_pago', 20)->nullable();//pendiente, pagado, parcial
+            $table->dateTime('fecha_vencimiento')->nullable();
             $table->text('observaciones')->nullable();
-
             $table->bigInteger('empleado_id')->unsigned();
-            $table->bigInteger('proveedor_id')->unsigned();
+            $table->bigInteger('proveedor_id')->unsigned()->nullable();
+
             $table->foreign('empleado_id')->references('id')->on('empleados');
             $table->foreign('proveedor_id')->references('id')->on('proveedors');
             $table->timestamps();

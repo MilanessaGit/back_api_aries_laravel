@@ -13,17 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('entrada_lote', function (Blueprint $table) {
+        Schema::create('pagos', function (Blueprint $table) {
             $table->id();
-            $table->integer('cantidad')->default(1);
-            $table->decimal('costo_unitario', 12, 2);  //precio_unitario
-            $table->string('observaciones')->nullable();
-
+            $table->dateTime('fecha_pago');
+            $table->decimal('monto', 12, 2);
+            $table->string('metodo_pago', 50);// efectivo, trasferencia, QR, cheque, tarjeta_credito, tarjeta_debito, etc.
+            $table->text('observaciones')->nullable();
             $table->bigInteger('entrada_id')->unsigned();
-            $table->bigInteger('lote_id')->unsigned();
-
+            
             $table->foreign('entrada_id')->references('id')->on('entradas');
-            $table->foreign('lote_id')->references('id')->on('lotes');
             $table->timestamps();
         });
     }
@@ -35,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('entrada_lote');
+        Schema::dropIfExists('pagos');
     }
 };

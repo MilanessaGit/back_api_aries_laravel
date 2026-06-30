@@ -17,6 +17,9 @@ class Salida extends Model
     public function lotes(){ //Una salida tiene muchos lote(s)
         return $this->belongsToMany(Lote::class)->withPivot(['cantidad'])->withTimestamps(); //->withPivot('cantidad') es para acceder a la columna cantidad de la tabla intermedia
     }
+    public function venta(){ //Una salida puede pertenecer a una venta
+        return $this->belongsTo(Venta::class);
+    }
 
     public static function generarCodigoSalida()
     {

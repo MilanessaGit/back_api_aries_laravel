@@ -20,9 +20,9 @@ return new class extends Migration
             $table->decimal('total', 12, 2);
             $table->integer('estado')->default(1); // 0: anulada, 1: completada, 2: pendiente
             $table->text('observaciones')->nullable();
-
-            $table->bigInteger('cliente_id')->unsigned();
+            $table->bigInteger('cliente_id')->unsigned()->nullable();
             $table->bigInteger('empleado_id')->unsigned();
+
             $table->foreign('cliente_id')->references('id')->on('clientes');
             $table->foreign('empleado_id')->references('id')->on('empleados');
             $table->timestamps();

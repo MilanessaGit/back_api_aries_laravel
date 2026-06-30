@@ -37,7 +37,7 @@ class VentaController extends Controller
             'empleado_id' => 'required|numeric|exists:empleados,id',
             'lotes' => 'required|array|min:1',
             'lotes.*.id' => 'required|numeric|exists:lotes,id',
-            'lotes.*.cantidad' => 'required|numeric|min:1',
+            'lotes.*.cantidad_r' => 'required|numeric|min:1', //*** */ cantidad del front no de la BD ** cambiar eso
             //'observaciones' => 'nullable|string'
         ]);
 
@@ -53,16 +53,17 @@ class VentaController extends Controller
             $venta->total = 0; //inicializamos en 0, luego se actualiza con el total de la venta
             $venta->estado = 1; // 1: activo, 0:anulado, 2:completado
             //$venta->observaciones = $request->observaciones ?? null;
-            $venta->save();
+            $venta->save(); // Cuidado que sin validar lotes puede guardar id incrementado en BD para una sgte venta valida
 
             //Salida
                 $salida = new Salida();
 
                 $salida->codigo_salida = Salida::generarCodigoSalida();
                 $salida->fecha = now();
-                $salida->total = 0;
-                $salida->tipo = 1; // Venta
-                $salida->empleado_id = $request->empleado_id;
+                //$salida->total = 0;
+                $salida->tipo = 1; // Solo aqui es 1 xq esto es venta en salida si o si
+                $salida->venta_id = $venta->id; // asociamos la salida a la venta
+                $salida->aprobado_por = $request->empleado_id;
 
                 $salida->save();
 
@@ -81,19 +82,18 @@ class VentaController extends Controller
             // los atributos de la relacion muchos a muchos se asignan en el attach)    
             $lotes = $request->lotes;
             $calculatedTotal = 0.0;
-
                 // recorremos los lotes enviados en el request del frontend y solo tienen como atributos id y cantidad, el precio_unitario lo obtenemos de la tabla lotes
                 foreach ($lotes as $lot) {
                     $loteId = (int) $lot["id"];
-                    $cantidadVenta = (int) $lot["cantidad"];
+                    $cantidadVenta = (int) $lot["cantidad_r"]; // cantidad que el frontend solicita para ese lote *(VUE)
                     
                     // obtener el precio unitario del lote de la BD 
                     $lote = Lote::where('id', $loteId)->lockForUpdate()->firstOrFail();
                     $precioUnitario = (float) $lote->costo_unitario;
 
                     //verificar si el lote tiene stock suficiente
-                    if ($lote->cantidad < $cantidadVenta) {
-                        throw new \Exception("Stock insuficiente para el lote {$loteId}. Disponible: {$lote->cantidad}, Solicitado: {$cantidadVenta}");
+                    if ($lote->cantidad_actual < $cantidadVenta) {
+                        throw new \Exception("Stock insuficiente para el lote {$loteId}. Disponible: {$lote->cantidad_actual}, Solicitado: {$cantidadVenta}");
                     }
 
                     //EJ:  $user->roles()->attach($roleId, ['expires' => $expires]);
@@ -109,21 +109,21 @@ class VentaController extends Controller
                         'cantidad' => $cantidadVenta,
                         'observaciones' => 'Salida generada por venta '.$venta->codigo_venta
                     ]);
-                $lote->cantidad -= $cantidadVenta; // restamos la cantidad vendida al stock del lote
+                $lote->cantidad_actual -= $cantidadVenta; // restamos la cantidad vendida al stock del lote
                 $lote->save(); // guardamos los cambios en el lote
                 $calculatedTotal += $cantidadVenta * $precioUnitario; // calculamos el total de la venta
                 }
                 //return $venta;
                 // actualizar total de la venta
                     $venta->total = $calculatedTotal;
-                    $venta->estado = 2; // COMPLETADO
+                    $venta->estado = 1; // COMPLETADO
                     $venta->save();
                 // actualizar estado //  COMPLETADO
                     //  $venta->estado = 2;
                 // guardarmos cambios
                     // $venta->update();
                 // retornamos respuesta
-                    $salida->total = $calculatedTotal;
+                    //$salida->total = $calculatedTotal;
                     $salida->save();
                 
 

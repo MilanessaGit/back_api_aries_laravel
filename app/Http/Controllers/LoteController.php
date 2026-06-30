@@ -53,12 +53,10 @@ class LoteController extends Controller
         //$lot->codigo_lote = $request->codigo_lote;
         $lot->codigo_lote = Lote::generarCodigoLote(); // Generar código de lote automáticamente
         $lot->costo_unitario = $request->costo_unitario;
-        $lot->cantidad = $request->cantidad; 
-        
+        $lot->cantidad_inicial = $request->cantidad_inicial; 
+        $lot->cantidad_actual = $request->cantidad_inicial; // Inicialmente, la cantidad actual es igual a la cantidad inicial
+
         //$lot->estado = $request->estado;
-        //$lot->fecha_ingreso = $request->fecha_ingreso;
-        //$lot->fecha_caducidad = $request->fecha_caducidad;
-        //$lot->trazabilidad = $request->trazabilidad;
 
         $lot->producto_id = $request->producto_id;
         $lot->save();
@@ -100,11 +98,10 @@ class LoteController extends Controller
         $lot->codigo_lote = $request->codigo_lote;
         
         $lot->costo_unitario = $request->costo_unitario;
-        $lot->cantidad = $request->cantidad;
+        $lot->cantidad_inicial = $request->cantidad_inicial;
+        $lot->cantidad_actual = $request->cantidad_actual;
         $lot->fecha_ingreso = $request->fecha_ingreso;
-        $lot->fecha_caducidad = $request->fecha_caducidad;
-        $lot->estado = $request->estado;
-        $lot->trazabilidad = $request->trazabilidad;
+        //$lot->estado = $request->estado; // Revisar esta por defecto en VUE
 
         
         $lot->producto_id = $request->producto_id;

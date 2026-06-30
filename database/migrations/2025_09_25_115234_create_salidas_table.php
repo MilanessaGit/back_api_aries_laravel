@@ -17,12 +17,15 @@ return new class extends Migration
             $table->id();
             $table->string('codigo_salida', 20);
             $table->dateTime('fecha');
-            $table->decimal('total', 12, 2);
-            $table->integer('tipo'); // 0:venta, 1:fisica
+            //$table->decimal('total', 12, 2);
+            $table->integer('tipo'); // 1:venta, 2:robo, 3:daño, 4:ajuste_negativo
             $table->text('observaciones')->nullable();
+            $table->bigInteger('aprobado_por')->unsigned();
+            $table->bigInteger('venta_id')->unsigned()->nullable();
+            
 
-            $table->bigInteger('empleado_id')->unsigned();
-            $table->foreign('empleado_id')->references('id')->on('empleados');
+            $table->foreign('venta_id')->references('id')->on('ventas');
+            $table->foreign('aprobado_por')->references('id')->on('empleados');
             $table->timestamps();
         });
     }

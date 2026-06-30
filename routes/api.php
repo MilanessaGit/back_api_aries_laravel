@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AlmacenController;
+//use App\Http\Controllers\AlmacenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -15,6 +15,8 @@ use App\Http\Controllers\RecomendacionController;
 use App\Http\Controllers\SalidaController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PagoController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -50,7 +52,7 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("categoria", CategoriaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("producto", ProductoController::class); // ->middleware('auth:sanctum');
     Route::apiResource("lote", LoteController::class); // ->middleware('auth:sanctum');
-    Route::apiResource("almacen", AlmacenController::class); // ->middleware('auth:sanctum');
+    
     Route::apiResource("cliente", ClienteController::class); // ->middleware('auth:sanctum');
     Route::apiResource("empleado", EmpleadoController::class); // ->middleware('auth:sanctum');
     Route::apiResource("proveedor", ProveedorController::class); // ->middleware('auth:sanctum');
@@ -58,6 +60,7 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("salida", SalidaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');
+    Route::apiResource("pago", PagoController::class); // ->middleware('auth:sanctum');
 });
 
 Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
@@ -70,7 +73,7 @@ Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->gro
     Route::apiResource('salida', SalidaController::class)->only(['index', 'show', 'store']);
 
     Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
-    Route::apiResource('almacen', AlmacenController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('pago', PagoController::class)->only(['index', 'show', 'store']);
     
 });
 
@@ -82,4 +85,5 @@ Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(fu
     
     Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
     Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
+    
 });

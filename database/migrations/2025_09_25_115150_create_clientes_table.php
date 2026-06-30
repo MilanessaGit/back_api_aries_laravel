@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('ci_nit', 20)->nullable();
             //$table->string('email');
             $table->string('telefono', 20)->nullable(); //No es obligatorio
-            $table->string('direccion', 255); ;
+            $table->string('direccion', 255)->nullable();
 
             $table->timestamps();
         });

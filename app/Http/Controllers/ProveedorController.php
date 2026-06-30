@@ -14,12 +14,16 @@ class ProveedorController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->q){
-            $prov = Proveedor::where('ci_nit' , 'like', "%" . $request->q . "%")->first();
+        $limit = $request->limit ? $request->limit : 10;
+        $q = $request->q;
+        $orderby = $request->orderby ? $request->orderby : 'id';
+
+        if($q){
+            $proveedores = Proveedor::where('ci_nit' , 'like', "%" . $q . "%")->orderBy($orderby)->paginate($limit);
         }else{
-            $prov = Proveedor::paginate(5);
+            $proveedores = Proveedor::orderBy($orderby)->paginate($limit);
         }
-        return response()->json($prov);
+        return response()->json($proveedores);
     }
 
     /**
@@ -30,13 +34,24 @@ class ProveedorController extends Controller
      */
     public function store(Request $request)
     {
+        //validar
+        $request->validate([
+            'ci_nit' => 'required|string|unique:proveedors',
+            'nombre' => 'required|string',
+            'apellido' => 'required|string',
+            'telefono' => 'nullable|string',
+            'direccion' => 'nullable|string'
+            
+        ]);
+        
         $proveedor = new Proveedor();
         $proveedor->codigo_proveedor = $request->codigo_proveedor;
+        $proveedor->ci_nit = $request->ci_nit;
         $proveedor->nombre = $request->nombre;
         $proveedor->apellido = $request->apellido;
-        $proveedor->ci_nit = $request->ci_nit;
         $proveedor->telefono = $request->telefono;
         $proveedor->direccion = $request->direccion;
+
         $proveedor->save();
         return response()->json($proveedor);
     }
@@ -49,7 +64,12 @@ class ProveedorController extends Controller
      */
     public function show($id)
     {
-        //
+        $proveedor = Proveedor::find($id);
+        if (!$proveedor) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
+        }
+
+        return response()->json($proveedor, 200);
     }
 
     /**
@@ -61,7 +81,20 @@ class ProveedorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $proveedor = Proveedor::find($id);
+        if (!$proveedor) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
+        }
+
+        $proveedor->codigo_proveedor = $request->codigo_proveedor;
+        $proveedor->nombre = $request->nombre;
+        $proveedor->apellido = $request->apellido;
+        $proveedor->ci_nit = $request->ci_nit;
+        $proveedor->telefono = $request->telefono;
+        $proveedor->direccion = $request->direccion;
+        $proveedor->save();
+
+        return response()->json($proveedor, 200);
     }
 
     /**
@@ -72,6 +105,12 @@ class ProveedorController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $proveedor = Proveedor::find($id);
+        if (!$proveedor) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
+        }
+
+        $proveedor->delete();
+        return response()->json(['message' => 'Proveedor eliminado'], 200);
     }
 }

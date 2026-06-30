@@ -16,14 +16,15 @@ return new class extends Migration
         Schema::create('lotes', function (Blueprint $table) {
             $table->id();
             $table->string('codigo_lote', 100);
-            $table->integer('cantidad')->default(0);
+            $table->integer('cantidad_inicial')->default(0); //----cantidad
+            $table->integer('cantidad_actual')->default(0);
             $table->date('fecha_ingreso')->nullable();
-            $table->date('fecha_caducidad')->nullable();
             $table->decimal('costo_unitario', 12, 2)->default(0);
             $table->integer('estado')->default(1); // 0:agotado, 1: Disponible, 2:reservado, 3:devuelto, 4:danado
-            $table->text('trazabilidad')->nullable();
-
+            //$table->text('trazabilidad')->nullable();
             $table->bigInteger('producto_id')->unsigned();
+            $table->text('observaciones')->nullable();
+
             $table->foreign('producto_id')->references('id')->on('productos');
             $table->timestamps();
         });
