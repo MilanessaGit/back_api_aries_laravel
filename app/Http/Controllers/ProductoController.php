@@ -15,21 +15,33 @@ class ProductoController extends Controller
      */
     public function index(Request $request) // Inyeccion de dependencias
     {
-        //  /api/producto?page=2&limit=10&q=laptop&orderby=id
-        // $page = $request->page;
         $limit = $request->limit ? $request->limit : 10;
         $q = $request->q;
         $orderby = $request->orderby ? $request->orderby : 'id';
 
+        // Construimos una única consulta
+        $query = Producto::with('categoria:id,nombre,descripcion')
+            ->withSum('lotes', 'cantidad_actual');
+
+        // Si el usuario envía una búsqueda
         if ($q) {
-            $productos = Producto::where('nombre', 'like', '%' . $q . '%')
-                ->orderBy($orderby, 'asc')
-                ->paginate($limit);
-        } else {
-            $productos = Producto::with('categoria:id,nombre,descripcion')->orderBy($orderby, 'desc')->paginate($limit);
+            $query->where('nombre', 'like', '%' . $q . '%');
         }
 
+        // Orden
+        $productos = $query
+            ->orderBy($orderby, $q ? 'asc' : 'desc')
+            ->paginate($limit);
+
+        // Agregamos el stock total calculado
+        $productos->getCollection()->transform(function ($producto) {
+            $producto->stock = $producto->lotes_sum_cantidad_actual ?? 0;
+            unset($producto->lotes_sum_cantidad_actual);
+            return $producto;
+        });
+
         return response()->json($productos, 200);
+
     }
 
     /**
@@ -38,6 +50,8 @@ class ProductoController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+
+
     public function store(Request $request)
     {
         //
@@ -71,6 +85,7 @@ class ProductoController extends Controller
         // responder
         return response()->json(["mensaje" => "Producto registrado", "data" => $prod]);
     }
+
 
     public function actualizarImagen($id, Request $request)
     {
@@ -161,4 +176,6 @@ class ProductoController extends Controller
 
         return response()->json($response->json());
     }
+
+   
 }

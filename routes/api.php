@@ -43,7 +43,7 @@ Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
 Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
-    
+    //Route::get('producto/buscar', [ProductoController::class,"buscar"]); 
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
     // CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
@@ -51,6 +51,7 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     
     Route::apiResource("categoria", CategoriaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("producto", ProductoController::class); // ->middleware('auth:sanctum');
+    
     Route::apiResource("lote", LoteController::class); // ->middleware('auth:sanctum');
     
     Route::apiResource("cliente", ClienteController::class); // ->middleware('auth:sanctum');
@@ -59,7 +60,7 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("entrada", EntradaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("salida", SalidaController::class); // ->middleware('auth:sanctum');
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
-    Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');
+    /*Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');*/
     Route::apiResource("pago", PagoController::class); // ->middleware('auth:sanctum');
 });
 
