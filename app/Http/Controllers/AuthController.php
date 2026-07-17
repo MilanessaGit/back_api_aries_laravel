@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 //use Validator;
 
 class AuthController extends Controller
@@ -39,23 +41,37 @@ class AuthController extends Controller
     //
     public function registro(Request $request)
     {
-        // validate
+        // Validar datos
         $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users",
-            "password" => "required",
+            "name" => "required|string|max:255",
+            "email" => "required|email|unique:users,email",
+            "password" => "required|min:6",
             "c_password" => "required|same:password"
         ]);
 
-        // register user (insert with orm)
-        $u = new User;
-        $u->name = $request->name;
-        $u->email = $request->email;
-        $u->password = bcrypt($request->password);
-        $u->save();
+        // Crear usuario
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        // $user->password = bcrypt($request->password);
+        $user->save();
 
-        //response
-        return response()->json([ "message" => "El usuario ha sido registrado"], 201);
+        // Buscar el rol vendedor
+        $rolVendedor = Role::where('nombre', 'vendedor')->first();
+
+        if (!$rolVendedor) {
+            return response()->json([
+                "message" => "El rol vendedor no existe."
+            ], 500);
+        }
+
+        // Asignar rol
+        $user->roles()->attach($rolVendedor->id);
+
+        return response()->json([
+            "message" => "Usuario registrado correctamente."
+        ], 201);
     }
     //
     public function miPerfil(Request $request)
