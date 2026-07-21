@@ -18,9 +18,10 @@ return new class extends Migration
             $table->string('codigo_lote', 100);
             $table->integer('cantidad_inicial')->default(0); //----cantidad
             $table->integer('cantidad_actual')->default(0);
-            $table->date('fecha_ingreso')->nullable();
             $table->decimal('costo_unitario', 12, 2)->default(0);
-            $table->integer('estado')->default(1); // 0:agotado, 1: Disponible, 2:reservado, 3:devuelto, 4:danado
+            $table->date('fecha_ingreso')->nullable();
+            $table->string('origen', 50)->nullable(); //compra, fabricacion, devolucion?
+            $table->integer('estado')->default(1); //0 = ACTIVO 1 = DAÑADO 2 = BLOQUEADO
             //$table->text('trazabilidad')->nullable();
             $table->bigInteger('producto_id')->unsigned();
             $table->text('observaciones')->nullable();

@@ -49,7 +49,8 @@ class VentaController extends Controller
             $venta->cliente_id = (int) $request->cliente_id;
             $venta->empleado_id =  (int) $request->empleado_id; 
             $venta->codigo_venta = Venta::generarCodigoVenta();
-            $venta->fecha = date('Y-m-d H:i:s');// now()
+            $venta->tipo_venta = $request->tipo_venta ?? 'Directa'; // Directa, Reserva, Contrato
+            $venta->fecha_venta = date('Y-m-d H:i:s');// now()
             $venta->total = 0; //inicializamos en 0, luego se actualiza con el total de la venta
             $venta->estado = 1; // 1: activo, 0:anulado, 2:completado
             //$venta->observaciones = $request->observaciones ?? null;

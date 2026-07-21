@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('fecha_pago');
             $table->decimal('monto', 12, 2);
+            $table->dateTime('fecha_pago');
             $table->string('metodo_pago', 50);// efectivo, trasferencia, QR, cheque, tarjeta_credito, tarjeta_debito, etc.
             $table->text('observaciones')->nullable();
             $table->bigInteger('entrada_id')->unsigned();

@@ -41,8 +41,8 @@ class EmpleadoController extends Controller
             'ci_nit' => 'required|string|unique:empleados',
             'edad' => 'required|integer',
             'telefono' => 'nullable|string',
-            'direccion' => 'nullable|string'
-            //,'user_id' => 'required'
+            'direccion' => 'nullable|string',
+            'user_id' => 'required'
         ]);
 
         //guardar
@@ -53,7 +53,7 @@ class EmpleadoController extends Controller
         $emp->edad = $request->edad;
         $emp->telefono = $request->telefono;
         $emp->direccion = $request->direccion;
-        //$emp->user_id = $request->user_id;
+        $emp->user_id = $request->user_id;
         $emp->save();
 
         return response()->json(['message' => 'Empleado creado exitosamente'], 201);

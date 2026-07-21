@@ -17,6 +17,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\Admin\DashboardController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -43,6 +44,8 @@ Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
 Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
+    
+    Route::get('/dashboard', [DashboardController::class, 'index']);
     //Route::get('producto/buscar', [ProductoController::class,"buscar"]); 
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 

@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::create('salidas', function (Blueprint $table) {
             $table->id();
             $table->string('codigo_salida', 20);
-            $table->dateTime('fecha');
             //$table->decimal('total', 12, 2);
-            $table->integer('tipo'); // 1:venta, 2:robo, 3:daño, 4:ajuste_negativo
+            $table->string('tipo', 20); // 1:venta, 2:robo, 3:daño, 4:ajuste_negativo
+            $table->dateTime('fecha');
             $table->text('observaciones')->nullable();
             $table->bigInteger('aprobado_por')->unsigned();
             $table->bigInteger('venta_id')->unsigned()->nullable();

@@ -48,7 +48,8 @@ class ClienteController extends Controller
      */
     public function show($id)
     {
-        //
+        $cliente = Cliente::find($id);
+        return response()->json($cliente);
     }
 
     /**
@@ -61,6 +62,15 @@ class ClienteController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $cliente = Cliente::find($id);
+        $cliente->nombre = $request->nombre;
+        $cliente->apellido = $request->apellido;
+        $cliente->ci_nit = $request->ci_nit;
+        $cliente->telefono = $request->telefono;
+        $cliente->direccion = $request->direccion;
+        $cliente->update();
+        return response()->json('mensaje: Cliente Actualizado Exitosamente', 200);
+
     }
 
     /**
@@ -72,5 +82,9 @@ class ClienteController extends Controller
     public function destroy($id)
     {
         //
+        $cliente = Cliente::find($id);
+        $cliente->delete();
+
+        return response()->json(['message' => 'Cliente Eliminado Exitosamente'], 200);
     }
 }
