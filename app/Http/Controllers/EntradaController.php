@@ -17,13 +17,57 @@ class EntradaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    /*public function index()
     {
         $entradas = Entrada::with('proveedor', 'lotes')->orderBy('id', 'desc')->paginate(5);
 
         //$entradas = Entrada::orderBy('id', 'desc')->paginate(10);
         return response()->json($entradas);
-    }
+    }*/
+    public function index()
+    {
+        $entradas = Entrada::with([
+                'proveedor',
+                'lotes'
+            ])
+            ->withSum('pagos', 'monto')
+            ->orderBy('id', 'desc')
+            ->paginate(5);
+
+        $entradas->getCollection()->transform(function ($entrada) {
+
+            $totalPagado = $entrada->pagos_sum_monto ?? 0;
+
+            $entrada->total_pagado = $totalPagado;
+
+            $entrada->saldo_pendiente = max(
+                0,
+                $entrada->total - $totalPagado
+            );
+
+            switch ($entrada->estado_pago) {
+
+                case 1:
+                    $entrada->estado_pago_texto = "Pendiente";
+                    break;
+
+                case 2:
+                    $entrada->estado_pago_texto = "Pagado";
+                    break;
+
+                case 3:
+                    $entrada->estado_pago_texto = "Parcial";
+                    break;
+
+                default:
+                    $entrada->estado_pago_texto = "Desconocido";
+            }
+
+            return $entrada;
+        });
+
+        return response()->json($entradas);
+    }    
 
 
     /**

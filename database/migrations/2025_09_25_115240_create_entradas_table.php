@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('total', 12, 2)->nullable(); // ------precio_total 
             $table->dateTime('fecha');
             $table->dateTime('fecha_vencimiento')->nullable();
-            $table->string('tipo_pago', 50)->nullable(); // 1:contado, 2:credito, 3:mixto
+            $table->string('tipo_pago', 50)->nullable(); // 1:contado, 2:credito
             $table->integer('estado_pago')->default(1); // 1:pendiente, 2:pagado, 3:parcial
             $table->text('observaciones')->nullable();
             $table->bigInteger('empleado_id')->unsigned();
