@@ -18,6 +18,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ReporteController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -43,9 +44,26 @@ Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recome
 Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
+
+
 Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
     
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::prefix('reportes')->group(function () {
+        Route::get('/inventario-actual', [ReporteController::class,
+            'inventarioActual']);
+
+        Route::get('/compras-por-proveedor', [ReporteController::class,
+            'comprasPorProveedor']);
+
+        Route::get('/ventas-por-periodo', [ReporteController::class,
+            'ventasPorPeriodo']);
+
+        Route::get('/productos-mas-vendidos', [ReporteController::class,
+            'productosMasVendidos']);
+    });
+    //
+
     //Route::get('producto/buscar', [ProductoController::class,"buscar"]); 
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
@@ -65,6 +83,30 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
     /*Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');*/
     Route::apiResource("pago", PagoController::class); // ->middleware('auth:sanctum');
+    
+    ///
+    Route::prefix('reportes')->group(function () {
+        Route::get('/inventario-actual', [
+            ReporteController::class,
+            'inventarioActual'
+        ]);
+
+        Route::get('/compras-por-proveedor', [
+            ReporteController::class,
+            'comprasPorProveedor'
+        ]);
+
+        Route::get('/ventas-por-periodo', [
+            ReporteController::class,
+            'ventasPorPeriodo'
+        ]);
+
+        Route::get('/productos-mas-vendidos', [
+            ReporteController::class,
+            'productosMasVendidos'
+        ]);
+    });
+
 });
 
 Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
