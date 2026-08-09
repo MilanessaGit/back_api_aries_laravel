@@ -44,7 +44,7 @@ Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recome
 Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
-
+    
 
 Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
     

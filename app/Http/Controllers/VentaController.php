@@ -17,132 +17,226 @@ class VentaController extends Controller
      */
     public function index()
     {
-        $ventas = Venta::with('cliente', 'lotes')->orderBy('id', 'asc')->paginate(5);
+        $ventas = Venta::with('cliente', 'lotes')
+            ->orderBy('id', 'asc')
+            ->paginate(10);
 
-        //$ventas = Venta::orderBy('id', 'desc')->paginate(10);
         return response()->json($ventas);
     }
 
     /**
      * Store a newly created resource in storage.
      *
+     * La venta recibe PRODUCTOS y CANTIDADES.
+     * Laravel selecciona automáticamente los lotes aplicando FIFO:
+     * fecha_ingreso ASC y, en caso de empate, id ASC.
+     *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        // Validación completa
         $request->validate([
             'cliente_id' => 'required|numeric|exists:clientes,id',
             'empleado_id' => 'required|numeric|exists:empleados,id',
-            'lotes' => 'required|array|min:1',
-            'lotes.*.id' => 'required|numeric|exists:lotes,id',
-            'lotes.*.cantidad_r' => 'required|numeric|min:1', //*** */ cantidad del front no de la BD ** cambiar eso
-            //'observaciones' => 'nullable|string'
+            'tipo_venta' => 'nullable|string',
+
+            'productos' => 'required|array|min:1',
+            'productos.*.producto_id' => 'required|integer|distinct|exists:productos,id',
+            'productos.*.cantidad' => 'required|integer|min:1',
         ]);
 
         DB::beginTransaction();
-        try{
-            //registrar nueva venta (PENDIENTE)
-            $venta = new Venta();
-            // asignar cliente a la venta
-            $venta->cliente_id = (int) $request->cliente_id;
-            $venta->empleado_id =  (int) $request->empleado_id; 
-            $venta->codigo_venta = Venta::generarCodigoVenta();
-            $venta->tipo_venta = $request->tipo_venta ?? 'Directa'; // Directa, Reserva, Contrato
-            $venta->fecha_venta = date('Y-m-d H:i:s');// now()
-            $venta->total = 0; //inicializamos en 0, luego se actualiza con el total de la venta
-            $venta->estado = 1; // 1: activo, 0:anulado, 2:completado
-            //$venta->observaciones = $request->observaciones ?? null;
-            $venta->save(); // Cuidado que sin validar lotes puede guardar id incrementado en BD para una sgte venta valida
 
-            //Salida
-                $salida = new Salida();
+        try {
 
-                $salida->codigo_salida = Salida::generarCodigoSalida();
-                $salida->fecha = now();
-                //$salida->total = 0;
-                $salida->tipo = 1; // Solo aqui es 1 xq esto es venta en salida si o si
-                $salida->venta_id = $venta->id; // asociamos la salida a la venta
-                $salida->aprobado_por = $request->empleado_id;
+            /*
+             * PASO 1:
+             * Validar stock y bloquear los lotes involucrados.
+             */
+            $lotesPorProducto = [];
 
-                $salida->save();
+            foreach ($request->productos as $item) {
 
-            /* Esto lo que el frontend enviaría en el request para registrar una venta
-            {
-                cliente_id: 5,
-                lotes: [
-                    {lote_id: 3, cantidad: 1},
-                    {lote_id: 4, cantidad: 1},
-                    {lote_id: 1, cantidad: 1},
-                ]
+                $productoId = (int) $item['producto_id'];
+                $cantidadSolicitada = (int) $item['cantidad'];
+
+                $lotes = Lote::where('producto_id', $productoId)
+                    ->where('cantidad_actual', '>', 0)
+                    ->orderBy('fecha_ingreso', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->lockForUpdate()
+                    ->get();
+
+                $stockDisponible = (int) $lotes->sum('cantidad_actual');
+
+                if ($stockDisponible < $cantidadSolicitada) {
+                    throw new \Exception(
+                        "Stock insuficiente para el producto ID {$productoId}. " .
+                        "Disponible: {$stockDisponible}, Solicitado: {$cantidadSolicitada}"
+                    );
+                }
+
+                $lotesPorProducto[$productoId] = $lotes;
             }
-            */
 
-            // asignar Lotes// En $request llega lo que enviamos del boton del carrito
-            // los atributos de la relacion muchos a muchos se asignan en el attach)    
-            $lotes = $request->lotes;
+            /*
+             * PASO 2:
+             * Registrar la venta.
+             */
+            $venta = new Venta();
+
+            $venta->cliente_id = (int) $request->cliente_id;
+            $venta->empleado_id = (int) $request->empleado_id;
+            $venta->codigo_venta = Venta::generarCodigoVenta();
+            $venta->tipo_venta = $request->tipo_venta ?? 'Directa';
+            $venta->fecha_venta = date('Y-m-d H:i:s');
+
+            $venta->total = 0;
+            $venta->estado = 1;
+
+            $venta->save();
+
+            /*
+             * PASO 3:
+             * Registrar la salida asociada a la venta.
+             */
+            $salida = new Salida();
+
+            $salida->codigo_salida = Salida::generarCodigoSalida();
+            $salida->fecha = now();
+            $salida->tipo = 1;
+            $salida->venta_id = $venta->id;
+            $salida->aprobado_por = (int) $request->empleado_id;
+
+            $salida->save();
+
+            /*
+             * PASO 4:
+             * Aplicar FIFO producto por producto.
+             */
             $calculatedTotal = 0.0;
-                // recorremos los lotes enviados en el request del frontend y solo tienen como atributos id y cantidad, el precio_unitario lo obtenemos de la tabla lotes
-                foreach ($lotes as $lot) {
-                    $loteId = (int) $lot["id"];
-                    $cantidadVenta = (int) $lot["cantidad_r"]; // cantidad que el frontend solicita para ese lote *(VUE)
-                    
-                    // obtener el precio unitario del lote de la BD 
-                    $lote = Lote::where('id', $loteId)->lockForUpdate()->firstOrFail();
-                    $precioUnitario = (float) $lote->costo_unitario;
 
-                    //verificar si el lote tiene stock suficiente
-                    if ($lote->cantidad_actual < $cantidadVenta) {
-                        throw new \Exception("Stock insuficiente para el lote {$loteId}. Disponible: {$lote->cantidad_actual}, Solicitado: {$cantidadVenta}");
+            foreach ($request->productos as $item) {
+
+                $productoId = (int) $item['producto_id'];
+                $cantidadPendiente = (int) $item['cantidad'];
+
+                $lotes = $lotesPorProducto[$productoId];
+
+                foreach ($lotes as $lote) {
+
+                    if ($cantidadPendiente <= 0) {
+                        break;
                     }
 
-                    //EJ:  $user->roles()->attach($roleId, ['expires' => $expires]);
-                    
-                    //Attah nos ayuda a insertar en la tabla intermedia 'venta_lote' los datos de la venta, el lote y los atributos adicionales cantidad y precio_unitario
-                    $venta->lotes()->attach($loteId, [
-                        'cantidad' => $cantidadVenta,// La cantidad que el frontend solicita para ese lote
-                        'precio_unitario' => $precioUnitario, // ver que precio colocar al final. Si el precio del lote o el precio de venta que viene del frontend, lo ideal es que el frontend envíe el precio de venta y no el precio del lote, pero por ahora lo dejamos así************
-                        //'observaciones' => $lot['observaciones'] ?? null
-                        ]);
-                    // $venta->lotes()->attach($id, ['precio_unitario' => $precio_unitario]);
-                    $salida->lotes()->attach($loteId, [
-                        'cantidad' => $cantidadVenta,
-                        'observaciones' => 'Salida generada por venta '.$venta->codigo_venta
+                    /*
+                     * Determinamos cuánto sacar del lote actual.
+                     */
+                    $cantidadADescontar = min(
+                        $cantidadPendiente,
+                        (int) $lote->cantidad_actual
+                    );
+
+                    $precioUnitario = (float) $lote->costo_unitario;
+
+                    /*
+                     * Registrar trazabilidad:
+                     *
+                     * Venta -> Lote
+                     */
+                    $venta->lotes()->attach($lote->id, [
+                        'cantidad' => $cantidadADescontar,
+                        'precio_unitario' => $precioUnitario,
                     ]);
-                $lote->cantidad_actual -= $cantidadVenta; // restamos la cantidad vendida al stock del lote
-                $lote->save(); // guardamos los cambios en el lote
-                $calculatedTotal += $cantidadVenta * $precioUnitario; // calculamos el total de la venta
+
+                    /*
+                     * Registrar trazabilidad:
+                     *
+                     * Salida -> Lote
+                     */
+                    $salida->lotes()->attach($lote->id, [
+                        'cantidad' => $cantidadADescontar,
+                        'observaciones' =>
+                            'Salida generada por venta ' .
+                            $venta->codigo_venta,
+                    ]);
+
+                    /*
+                     * Descontar físicamente el inventario.
+                     */
+                    $lote->cantidad_actual -= $cantidadADescontar;
+                    $lote->save();
+
+                    /*
+                     * Por ahora conservamos el cálculo original
+                     * del sistema basado en costo_unitario.
+                     *
+                     * El precio de venta se revisará posteriormente
+                     * sin mezclarlo con FIFO.
+                     */
+                    $calculatedTotal +=
+                        $cantidadADescontar * $precioUnitario;
+
+                    /*
+                     * Restamos lo que ya conseguimos cubrir.
+                     */
+                    $cantidadPendiente -= $cantidadADescontar;
                 }
-                //return $venta;
-                // actualizar total de la venta
-                    $venta->total = $calculatedTotal;
-                    $venta->estado = 1; // COMPLETADO
-                    $venta->save();
-                // actualizar estado //  COMPLETADO
-                    //  $venta->estado = 2;
-                // guardarmos cambios
-                    // $venta->update();
-                // retornamos respuesta
-                    //$salida->total = $calculatedTotal;
-                    $salida->save();
-                
 
-                DB::commit();
-                // all good
-                return response()->json(["mensaje" => "Venta Registrada", "data" => $venta], 200);
+                /*
+                 * Seguridad adicional.
+                 *
+                 * En condiciones normales esto nunca debería
+                 * ejecutarse porque el stock ya fue validado.
+                 */
+                if ($cantidadPendiente > 0) {
+                    throw new \Exception(
+                        "No fue posible completar la venta " .
+                        "del producto ID {$productoId}."
+                    );
+                }
+            }
+
+            /*
+             * PASO 5:
+             * Actualizar total de la venta.
+             */
+            $venta->total = $calculatedTotal;
+            $venta->save();
+
+            /*
+             * Todo salió correctamente.
+             */
+            DB::commit();
+
+            return response()->json([
+                'mensaje' =>
+                    'Venta registrada correctamente aplicando FIFO',
+                'data' => $venta,
+            ], 201);
+
         } catch (\Exception $e) {
-            DB::rollback();
-            // something went wrong
-            return response()->json(["mensaje" => "Error al registrar la venta", "error" => $e->getMessage()], 500);
+
+            /*
+             * Si algo falla:
+             *
+             * - venta
+             * - salida
+             * - lote_venta
+             * - lote_salida
+             * - cantidad_actual
+             *
+             * regresan al estado anterior.
+             */
+            DB::rollBack();
+
+            return response()->json([
+                'mensaje' => 'Error al registrar la venta',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-
-        //return response()->json($venta, 201);
-        
-        // return response()->json(["mensaje" => "Venta Registrada"], 201);
     }
-
 
     /**
      * Display the specified resource.
