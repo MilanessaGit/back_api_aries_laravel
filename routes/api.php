@@ -44,11 +44,10 @@ Route::get('/recomendar/{producto_id}', [RecomendacionController::class, 'recome
 Route::get('/prediccion', [ProductoController::class, 'prediccion']);
 
 
-    
-
 Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function(){
     
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    //Route::get('producto/buscar', [ProductoController::class,"buscar"]); 
     Route::prefix('reportes')->group(function () {
         Route::get('/inventario-actual', [ReporteController::class,
             'inventarioActual']);
@@ -62,9 +61,6 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
         Route::get('/productos-mas-vendidos', [ReporteController::class,
             'productosMasVendidos']);
     });
-    //
-
-    //Route::get('producto/buscar', [ProductoController::class,"buscar"]); 
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
 
     // CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
@@ -83,30 +79,6 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("venta", VentaController::class); // ->middleware('auth:sanctum');
     /*Route::apiResource("role", RoleController::class); // ->middleware('auth:sanctum');*/
     Route::apiResource("pago", PagoController::class); // ->middleware('auth:sanctum');
-    
-    ///
-    Route::prefix('reportes')->group(function () {
-        Route::get('/inventario-actual', [
-            ReporteController::class,
-            'inventarioActual'
-        ]);
-
-        Route::get('/compras-por-proveedor', [
-            ReporteController::class,
-            'comprasPorProveedor'
-        ]);
-
-        Route::get('/ventas-por-periodo', [
-            ReporteController::class,
-            'ventasPorPeriodo'
-        ]);
-
-        Route::get('/productos-mas-vendidos', [
-            ReporteController::class,
-            'productosMasVendidos'
-        ]);
-    });
-
 });
 
 Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
@@ -114,7 +86,7 @@ Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->gro
     Route::apiResource('producto', ProductoController::class)->only(['index', 'show']);
     Route::apiResource('lote', LoteController::class)->only(['index', 'show', 'store']);
 
-    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store', 'update']);
     Route::apiResource('entrada', EntradaController::class)->only(['index', 'show', 'store']);
     Route::apiResource('salida', SalidaController::class)->only(['index', 'show', 'store']);
 
@@ -130,6 +102,6 @@ Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(fu
 
     
     Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store']);
-    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store']);
+    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store', 'update']);
     
 });
