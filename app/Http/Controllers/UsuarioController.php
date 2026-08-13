@@ -2,117 +2,123 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
-    { 
+    {
+        $query = User::with('roles:id,nombre');
+
         if ($request->buscado) {
-            $usuarios = User::orWhere('name', 'like', '%'.$request->buscado.'%')
-                                ->orWhere('email', 'like', '%'.$request->buscado.'%')
-                                ->get();
-            
-        } else {
-            // Listar
-            // User.all();
-            // User.paginate(5); mostrar 5 usuario con paginacion
-        $usuarios = User::get();
+            $buscado = $request->buscado;
+
+            $query->where(function ($q) use ($buscado) {
+                $q->where('name', 'like', '%' . $buscado . '%')
+                    ->orWhere('email', 'like', '%' . $buscado . '%');
+            });
         }
+
+        $usuarios = $query->orderByDesc('id')->get();
 
         return response()->json($usuarios);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-    //REGISTRO DE NUEVOS USUARIOS
     public function store(Request $request)
     {
-        // Guardar lo enviado($request)
-        
-        //VALIDACION
         $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users",
-            "password" => "required"
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'role' => 'required|exists:roles,nombre',
         ]);
-        
-        // REGISTRAR (INSERTAR CON ORM) | GUARDAR 
-        $usuario = new User;
-        $usuario->name = $request->name;
-        $usuario->email = $request->email;
-        $usuario->password =  bcrypt($request->password);
-        $usuario->save();
 
-        return response()->json(["message" => "Usuario registrado correctamente", "data" => $usuario]);  
+        $usuario = DB::transaction(function () use ($request) {
+            $usuario = new User();
+            $usuario->name = $request->name;
+            $usuario->email = $request->email;
+            $usuario->password = bcrypt($request->password);
+            $usuario->save();
+
+            $rol = Role::where('nombre', $request->role)->firstOrFail();
+
+            // El sistema trabaja con un único rol principal por usuario.
+            $usuario->roles()->sync([$rol->id]);
+
+            return $usuario;
+        });
+
+        return response()->json([
+            'message' => 'Usuario registrado correctamente',
+            'data' => $usuario->load('roles:id,nombre'),
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        // Mostrar por $id
-        $usuario = User::find($id);
-        // otra alternativa: User::where('id', $id)->first();
+        $usuario = User::with('roles:id,nombre')->find($id);
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+        }
+
         return response()->json($usuario);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-
-    // MODIFICAR O ACTUALIZAR 
     public function update(Request $request, $id)
     {
-        // Modificar lo enviado($request), por $id
-        //VALIDACION
         $request->validate([
-            "name" => "required",
-            "email" => "required|email|unique:users,email,$id", // excepto $id , ignorar asi mismo para evitar errores; caso particular
-            "password" => "required"
-        ]);// la info es correcta segun lo requerido
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'required|min:6',
+            'role' => 'required|exists:roles,nombre',
+        ]);
+
         $usuario = User::find($id);
 
-        $usuario->name = $request->name;
-        $usuario->email = $request->email;
-        $usuario->password =  bcrypt($request->password);
-        $usuario->update();
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+        }
 
-        return response()->json(["message" => "Usuario modificado correctamente", "data" => $usuario]);  
-    
+        DB::transaction(function () use ($request, $usuario) {
+            $usuario->name = $request->name;
+            $usuario->email = $request->email;
+            $usuario->password = bcrypt($request->password);
+            $usuario->save();
+
+            $rol = Role::where('nombre', $request->role)->firstOrFail();
+
+            // Reemplaza cualquier rol anterior por el rol seleccionado.
+            $usuario->roles()->sync([$rol->id]);
+        });
+
+        return response()->json([
+            'message' => 'Usuario modificado correctamente',
+            'data' => $usuario->fresh()->load('roles:id,nombre'),
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        // Eliminar por $id 
         $usuario = User::find($id);
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+        }
+
         $usuario->delete();
 
-        return response()->json(["message" => "Usuario eliminado"]);
+        return response()->json([
+            'message' => 'Usuario eliminado',
+        ]);
     }
 }
