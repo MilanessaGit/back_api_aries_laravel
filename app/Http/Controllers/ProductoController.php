@@ -172,7 +172,7 @@ class ProductoController extends Controller
 
     public function prediccion()
     {
-        $response = Http::get('http://127.0.0.1:8001/prediccion');
+        $response = Http::get(config('services.knn.url') . '/prediccion');
 
         return response()->json($response->json());
     }

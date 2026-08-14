@@ -22,7 +22,7 @@ class RecomendacionController extends Controller
 
         try {
             $response = Http::timeout(5)
-                ->get("http://127.0.0.1:8001/recomendar/{$producto_id}");
+                ->get(config('services.knn.url') . "/recomendar/{$producto_id}");
 
             if (!$response->successful()) {
                 return response()->json([
