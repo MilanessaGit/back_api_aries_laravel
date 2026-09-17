@@ -13,6 +13,7 @@ class ProductoController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    
     public function index(Request $request) // Inyeccion de dependencias
     {
         $limit = $request->limit ? $request->limit : 10;
@@ -176,6 +177,11 @@ class ProductoController extends Controller
 
         return response()->json($response->json());
     }
-
+    public function listarTodos()
+    {
+        return response()->json([
+            'data' => Producto::all()
+        ]);
+    }
    
 }

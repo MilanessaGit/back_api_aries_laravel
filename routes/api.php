@@ -62,7 +62,7 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
             'productosMasVendidos']);
     });
     Route::post('producto/{id}/imagen', [ProductoController::class, "actualizarImagen"]);
-
+    Route::get('/producto/todos', [ProductoController::class, 'listarTodos']);
     // CRUD Api para Usuario (esto conectarara con su controllador: UsuarioController) 
     Route::apiResource("usuario", UsuarioController::class); // ->middleware('auth:sanctum');
     

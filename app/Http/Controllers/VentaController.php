@@ -42,6 +42,7 @@ class VentaController extends Controller
             'productos' => 'required|array|min:1',
             'productos.*.producto_id' => 'required|integer|distinct|exists:productos,id',
             'productos.*.cantidad' => 'required|integer|min:1',
+            'productos.*.precio_unitario' => 'required|numeric|min:0.01',
         ]);
 
         DB::beginTransaction();
@@ -59,7 +60,7 @@ class VentaController extends Controller
                 $cantidadSolicitada = (int) $item['cantidad'];
 
                 $producto = Producto::findOrFail($productoId);
-                $precioVenta = (float) $producto->precio_sugerido;
+                $precioVenta = (float) $item['precio_unitario'];//$producto->precio_sugerido;
 
                 if ($precioVenta <= 0) {
                     throw new \Exception(
