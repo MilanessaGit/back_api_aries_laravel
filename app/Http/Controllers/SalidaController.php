@@ -16,7 +16,7 @@ class SalidaController extends Controller
      */
     public function index(Request $request)
     {
-        $salidas = Salida::with('empleado', 'lotes')->orderBy('id', 'desc')->paginate(5);
+        $salidas = Salida::with('empleado', 'lotes')->orderBy('id', 'desc')->paginate(10);
 
         //$salidas = Salida::orderBy('id', 'desc')->paginate(10);
         return response()->json($salidas);
@@ -33,9 +33,9 @@ class SalidaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'empleado_id' => 'required|exists:empleados,id',
+            //'empleado_id' => 'required|exists:empleados,id',
             'tipo_salida' => 'required|integer|min:1',
-            'observacion' => 'nullable|string',
+            'observaciones' => 'nullable|string|max:1000',
 
             //detalle en adelante
             'productos' => 'required|array|min:1', //debes ser un arreglo con al menos un elemento
@@ -68,7 +68,7 @@ class SalidaController extends Controller
                 //  La suma de los lotes obtenidos(del get): 5+10+15 = 30
 
                 if ($stockDisponible < $cantidadSolicitada) {
-                    throw new Exception(
+                    throw new \Exception(
                         "Stock insuficiente para el producto ID {$item['producto_id']}"
                     );
                 } // Solamente verificamos que exista suficiente stock
@@ -111,7 +111,7 @@ class SalidaController extends Controller
                     $cantidadPendiente -= $cantidadADescontar;
                 }
                 if ($cantidadPendiente > 0) {
-                        throw new Exception("Stock insuficiente para completar la salida del producto.");
+                        throw new \Exception("Stock insuficiente para completar la salida del producto.");
                 }
             }
             DB::commit();
@@ -120,9 +120,10 @@ class SalidaController extends Controller
                 "data" => $salida
             ], 201);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             //throw $e;
+           
             return response()->json(['mensaje'=>'Error','error'=>$e->getMessage()],500);
         }
     }

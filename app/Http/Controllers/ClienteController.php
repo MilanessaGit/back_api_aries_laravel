@@ -14,12 +14,30 @@ class ClienteController extends Controller
      */
     public function index(Request $request)
     {   
-        if($request->q){
+        /*if($request->q){
             $clie = Cliente::where('ci_nit' , 'like', "%" . $request->q . "%")->first();
         }else{
             $clie = Cliente::paginate(5);
         }
-        return response()->json($clie);
+        return response()->json($clie);*/
+        if ($request->filled('q')) {
+
+            $q = trim($request->q);
+            $limit = (int) $request->get('limit', 10);
+
+            $clientes = Cliente::where(function ($query) use ($q) {
+                    $query->where('ci_nit', 'like', "%{$q}%")
+                        ->orWhere('nombre', 'like', "%{$q}%")
+                        ->orWhere('apellido', 'like', "%{$q}%")
+                        ->orWhere('telefono', 'like', "%{$q}%");
+                })
+                ->limit($limit)
+                ->get();
+
+            return response()->json($clientes);
+        }
+
+        return response()->json(Cliente::paginate(5));
     }
 
     /**

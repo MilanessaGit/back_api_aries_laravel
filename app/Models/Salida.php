@@ -10,7 +10,7 @@ class Salida extends Model
     use HasFactory;
 
     public function empleado(){ //Una salida pertenece a un empleado
-        return $this->belongsTo(Empleado::class);
+        return $this->belongsTo(Empleado::class, 'aprobado_por'); //la columna en la tabla salidas que hace referencia a empleados es aprobado_por
     }
     
     // N:M

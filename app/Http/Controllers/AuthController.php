@@ -24,7 +24,8 @@ class AuthController extends Controller
             return response()->json(["message" => "No autorizado"],401);
         }
         // generar token
-        $user = Auth::user();
+        //$user = Auth::user()->load('empleado');
+        $user = Auth::user();        
         $tokenResult = $user->createToken("Token Auth");
         $token = $tokenResult->plainTextToken;
         // obtener rol
@@ -76,7 +77,9 @@ class AuthController extends Controller
     //
     public function miPerfil(Request $request)
     {
-        $user = Auth::user(); //otra alternativa $user = $request->user();
+
+        $user = Auth::user()->load('empleado');
+        //$user = Auth::user(); //otra alternativa $user = $request->user();
         //$user->ip = \Request::ip(); // Para obtener ip del cliente que se conecto
         //$user->ip = exec('getmac'); // Para obtener mac de la terminal(pc) que se conecta
         $role = $user->roles()->first();
