@@ -26,7 +26,7 @@ return [
     'allowed_origins' => [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
-        'http://192.168.0.2:5173',
+        'http://192.168.0.3:5173',
         'https://frontvue-production.up.railway.app',],
 
     'allowed_origins_patterns' => [],

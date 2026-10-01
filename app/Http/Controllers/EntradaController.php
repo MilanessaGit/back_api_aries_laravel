@@ -28,6 +28,7 @@ class EntradaController extends Controller
     {
         $entradas = Entrada::with([
                 'proveedor',
+                'empleado',
                 'lotes'
             ])
             ->withSum('pagos', 'monto')
@@ -80,8 +81,8 @@ class EntradaController extends Controller
     {
         $request->validate([
             'proveedor_id' => 'required|exists:proveedors,id',
-            'empleado_id' => 'required|integer',
-
+            //'empleado_id' => 'required|integer',
+            'empleado_id' => 'required|integer|exists:empleados,id',        
             'productos' => 'required|array|min:1',
 
             'productos.*.codigo_producto' => 'required|string',
