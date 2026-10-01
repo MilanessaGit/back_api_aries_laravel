@@ -13,7 +13,7 @@ class VentaController extends Controller
 {
     public function index()
     {
-        $ventas = Venta::with('cliente', 'lotes')
+        $ventas = Venta::with('cliente', 'empleado', 'lotes')
             ->orderBy('id', 'desc')
             ->get();
 
@@ -210,7 +210,7 @@ class VentaController extends Controller
 
     public function show($id)
     {
-        $venta = Venta::with('cliente', 'lotes')->findOrFail($id);
+        $venta = Venta::with('cliente', 'empleado', 'lotes')->findOrFail($id);
         return response()->json($venta);
     }
 
@@ -268,7 +268,7 @@ class VentaController extends Controller
                 return response()->json([
                     'mensaje' => 'Pago final registrado correctamente',
                     'monto_pago_final' => $saldoPendiente,
-                    'data' => $venta->fresh(['cliente', 'lotes']),
+                    'data' => $venta->fresh(['cliente', 'empleado', 'lotes']),
                 ]);
             }
 
@@ -291,7 +291,7 @@ class VentaController extends Controller
 
                 return response()->json([
                     'mensaje' => 'Venta marcada como entregada correctamente',
-                    'data' => $venta->fresh(['cliente', 'lotes']),
+                    'data' => $venta->fresh(['cliente', 'empleado','lotes']),
                 ]);
             }
 
