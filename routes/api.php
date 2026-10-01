@@ -81,6 +81,60 @@ Route::prefix('admin')->middleware('auth:sanctum', 'role:admin')->group(function
     Route::apiResource("pago", PagoController::class)->names('admin.pago'); // ->middleware('auth:sanctum');
 });
 
+Route::prefix('vendedor')
+    ->middleware('auth:sanctum', 'role:vendedor')
+    ->group(function () {
+
+        // Productos e inventario: solo consulta
+        Route::apiResource('categoria', CategoriaController::class)
+            ->only(['index', 'show'])
+            ->names('vendedor.categoria');
+
+        Route::get('/producto/todos', [
+            ProductoController::class,
+            'listarTodos'
+        ]);
+
+        Route::apiResource('producto', ProductoController::class)
+            ->only(['index', 'show'])
+            ->names('vendedor.producto');
+
+        Route::apiResource('lote', LoteController::class)
+            ->only(['index', 'show'])
+            ->names('vendedor.lote');
+
+
+        // Clientes: consultar y registrar
+        Route::apiResource('cliente', ClienteController::class)
+            ->only(['index', 'show', 'store'])
+            ->names('vendedor.cliente');
+
+
+        // Ventas / reservas
+        Route::apiResource('venta', VentaController::class)
+            ->only(['index', 'show', 'store', 'update'])
+            ->names('vendedor.venta');
+
+
+        // Proveedores: solo consulta
+        Route::apiResource('proveedor', ProveedorController::class)
+            ->only(['index', 'show'])
+            ->names('vendedor.proveedor');
+
+
+        // Entradas
+        Route::apiResource('entrada', EntradaController::class)
+            ->only(['index', 'show', 'store'])
+            ->names('vendedor.entrada');
+
+
+        // Salidas físicas
+        Route::apiResource('salida', SalidaController::class)
+            ->only(['index', 'show', 'store'])
+            ->names('vendedor.salida');
+    });
+
+/*
 Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->group(function(){
     Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show'])->names('supervisor.categoria');;
     Route::apiResource('producto', ProductoController::class)->only(['index', 'show'])->names('supervisor.producto');;
@@ -93,14 +147,5 @@ Route::prefix('supervisor')->middleware('auth:sanctum', 'role:supervisor' )->gro
     Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store'])->names('supervisor.cliente');;
     Route::apiResource('pago', PagoController::class)->only(['index', 'show', 'store'])->names('supervisor.pago');;
     
-});
+});*/
 
-Route::prefix('vendedor')->middleware('auth:sanctum', 'role:vendedor')->group(function(){
-    Route::apiResource('categoria', CategoriaController::class)->only(['index', 'show'])->names('vendedor.categoria');;
-    Route::apiResource('lote', LoteController::class)->only(['index', 'show']) ->names('vendedor.lote');;
-    Route::apiResource('producto', ProductoController::class)->only(['index', 'show'])->names('vendedor.producto');;
-
-    Route::apiResource('cliente', ClienteController::class)->only(['index', 'show', 'store'])->names('vendedor.cliente');;
-    Route::apiResource('venta', VentaController::class)->only(['index', 'show', 'store', 'update'])->names('vendedor.venta');;
-
-});
